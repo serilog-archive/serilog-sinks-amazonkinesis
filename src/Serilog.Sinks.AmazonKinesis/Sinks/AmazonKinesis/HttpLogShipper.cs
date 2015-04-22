@@ -163,17 +163,15 @@ namespace Serilog.Sinks.AmazonKinesis
                                     Records = records
                                 };
 
-                                var response = _state.KinesisClient.PutRecords(request);
-                                if (response.FailedRecordCount <= 0)
+                                PutRecordsResponse response = _state.KinesisClient.PutRecords(request);
+
+                                WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
+
+                                if (response.FailedRecordCount > 0)
                                 {
-                                    WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
-                                }
-                                else
-                                {
-                                    SelfLog.WriteLine("Exception Received failed Kinesis shipping result for stream '{0}'.", _state.Options.StreamName);
-                                    foreach (var item in response.ResponseMetadata.Metadata)
+                                    foreach (var record in response.Records)
                                     {
-                                        SelfLog.WriteLine("Kinesis metadata key: {0}, value: {1} ", item.Key, item.Value);
+                                        SelfLog.WriteLine("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
                                     }
                                 }
                             }
