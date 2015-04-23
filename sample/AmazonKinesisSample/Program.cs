@@ -38,7 +38,6 @@ namespace AmazonKinesisSample
                     shardCount: shardCount,
                     bufferLogShippingInterval: TimeSpan.FromSeconds(5),
                     bufferBaseFilename: "./logs/kinesis-buffer",
-                    bufferFileSizeLimitBytes: 999999999,
                     period: TimeSpan.FromSeconds(2)
                 );
             }
