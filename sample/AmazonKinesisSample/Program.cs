@@ -23,25 +23,29 @@ namespace AmazonKinesisSample
         {
             SelfLog.Out = Console.Out;
 
+            var streamName = "firehose";
+            var shardCount = 2;
             var kinesisClient = AWSClientFactory.CreateAmazonKinesisClient();
+            var streamAvailable = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(kinesisClient, streamName, shardCount);
 
-            var options = new KinesisSinkOptions(kinesisClient, streamName: "firehose", shardCount: 2)
-            {
-                BufferBaseFilename = "./logs/kinesis-buffer",
-                BufferLogShippingInterval = TimeSpan.FromSeconds(5),
-                Period = TimeSpan.FromSeconds(2),
-            };
+            var loggerConfig = new LoggerConfiguration().WriteTo.ColoredConsole();
 
-            var loggerConfig = new LoggerConfiguration()
-                .WriteTo.ColoredConsole();
-
-            var streamAvailable = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(options.KinesisClient, options.StreamName, options.ShardCount);
             if (streamAvailable)
             {
-                loggerConfig.WriteTo.AmazonKinesis(options).MinimumLevel.Debug();
+                loggerConfig.WriteTo.AmazonKinesis(
+                    kinesisClient: kinesisClient, 
+                    streamName: streamName, 
+                    shardCount: shardCount,
+                    bufferLogShippingInterval: TimeSpan.FromSeconds(5),
+                    bufferBaseFilename: "./logs/kinesis-buffer",
+                    bufferFileSizeLimitBytes: 999999999,
+                    period: TimeSpan.FromSeconds(2)
+                );
             }
 
-            Log.Logger = loggerConfig.CreateLogger();
+            Log.Logger = loggerConfig
+                .MinimumLevel.Debug()
+                .CreateLogger();
 
             #region Debug
 

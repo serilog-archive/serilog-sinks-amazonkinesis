@@ -2,8 +2,8 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Serilog.Sinks.AmazonKinesis</id>
-    <version>$version$-pre</version>
-    <authors>Serilog Contributors, Continuous IT Pty Ltd</authors>
+    <version>$version$</version>
+    <authors>Serilog Contributors</authors>
     <description>Serilog event sink that writes to Amazon Kinesis.</description>
     <language>en-US</language>
     <projectUrl>http://serilog.net</projectUrl>
@@ -11,6 +11,10 @@
     <iconUrl>http://serilog.net/images/serilog-sink-nuget.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>serilog logging aws amazon kinesis structured logging</tags>
+    <dependencies>
+        <dependency id="AWSSDK" version="2.3.32.0" />
+        <dependency id="Serilog" version="[1.4.204,2)" />
+    </dependencies>
   </metadata>
   <files>
     <file src="bin\Release\Serilog.Sinks.AmazonKinesis.dll" target="lib\net45" />

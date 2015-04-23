@@ -40,7 +40,6 @@ namespace Serilog.Sinks.AmazonKinesis
 
         private KinesisSinkState(KinesisSinkOptions options)
         {
-            if (string.IsNullOrWhiteSpace(options.IndexFormat)) throw new ArgumentException("options.IndexFormat");
             if (string.IsNullOrWhiteSpace(options.StreamName)) throw new ArgumentException("options.StreamName");
 
             _client = options.KinesisClient;

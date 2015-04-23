@@ -25,6 +25,22 @@ namespace Serilog.Sinks.AmazonKinesis
     public class KinesisSinkOptions
     {
         /// <summary>
+        /// The default time to wait between checking for event batches. Defaults to 2 seconds.
+        /// </summary>
+        public static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
+
+        /// <summary>
+        /// The default interval between checking the buffer files. Defaults to 2 seconds 
+        /// </summary>
+        public static TimeSpan DefaultBufferLogShippingInterval = TimeSpan.FromSeconds(2);
+
+        /// <summary>
+        /// The default maximum number of events to post in a single batch. Defaults to 500.
+        /// </summary>
+        public static int DefaultBatchPostingLimit = 500;
+        
+
+        /// <summary>
         /// The default stream name to use for the log events.
         /// </summary>
         public string StreamName { get; set; }
@@ -36,12 +52,6 @@ namespace Serilog.Sinks.AmazonKinesis
         /// Each shard corresponds to 1 MB/s of write capacity and 2 MB/s of read capacity.  
         /// </summary>
         public int ShardCount { get; set; }
-
-        /// <summary>
-        /// The index name formatter. A string.Format using the DateTimeOffset of the event is run over this string.
-        /// defaults to "audit-{0:yyyy.MM.dd}"
-        /// </summary>
-        public string IndexFormat { get; set; }
 
         /// <summary>
         /// The Amazon Kinesis client.
@@ -96,14 +106,14 @@ namespace Serilog.Sinks.AmazonKinesis
         /// </summary>
         public ITextFormatter CustomDurableFormatter { get; set; }
 
+        
         /// <summary>
         /// Configures the Amazon Kinesis sink defaults.
         /// </summary>
         protected KinesisSinkOptions()
         {
-            IndexFormat = "audit-{0:yyyy.MM.dd}";
-            Period = TimeSpan.FromSeconds(2);
-            BatchPostingLimit = 500;
+            Period = DefaultPeriod;
+            BatchPostingLimit = DefaultBatchPostingLimit;
         }
 
         /// <summary>
