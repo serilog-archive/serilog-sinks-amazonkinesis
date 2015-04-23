@@ -13,7 +13,7 @@
     <tags>serilog logging aws amazon kinesis structured logging</tags>
     <dependencies>
         <dependency id="AWSSDK" version="2.3.32.0" />
-        <dependency id="Serilog" version="[1.4.204,2)" />
+        <dependency id="Serilog" version="1.5.1" />
     </dependencies>
   </metadata>
   <files>
