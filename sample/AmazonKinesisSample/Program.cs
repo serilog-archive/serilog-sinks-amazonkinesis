@@ -25,7 +25,7 @@ namespace AmazonKinesisSample
 
             var kinesisClient = AWSClientFactory.CreateAmazonKinesisClient();
 
-            var options = new KinesisSinkOptions(kinesisClient, streamName: "firehose", shardCount: 20)
+            var options = new KinesisSinkOptions(kinesisClient, streamName: "firehose", shardCount: 2)
             {
                 BufferBaseFilename = "./logs/kinesis-buffer",
                 BufferLogShippingInterval = TimeSpan.FromSeconds(5),
@@ -45,7 +45,7 @@ namespace AmazonKinesisSample
 
             #region Debug
 
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < 50; i++)
             {
                 for (int j = 0; j < 500; j++)
                 {
