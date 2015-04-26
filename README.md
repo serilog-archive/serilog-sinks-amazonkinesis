@@ -12,7 +12,7 @@ PM> Install-Package Serilog.Sinks.AmazonKinesis
 
 Point the logger to Kinesis:
 
-```powershell
+```csharp
 SelfLog.Out = Console.Out;
 
 const string streamName = "firehose";
