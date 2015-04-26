@@ -3,7 +3,7 @@
   <metadata>
     <id>Serilog.Sinks.AmazonKinesis</id>
     <version>$version$</version>
-    <authors>Serilog Contributors</authors>
+    <authors>Jake Scott</authors>
     <description>Serilog event sink that writes to Amazon Kinesis.</description>
     <language>en-US</language>
     <projectUrl>http://serilog.net</projectUrl>
