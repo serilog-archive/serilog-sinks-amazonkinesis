@@ -13,31 +13,36 @@ PM> Install-Package Serilog.Sinks.AmazonKinesis
 Point the logger to Kinesis:
 
 ```csharp
-SelfLog.Out = Console.Out;
-
 const string streamName = "firehose";
 const int shardCount = 2;
 
-var client = AWSClientFactory.CreateAmazonKinesisClient();
-var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(client, streamName, shardCount);
+SelfLog.Out = Console.Out;
 
-var loggerConfig = new LoggerConfiguration();
+var client = AWSClientFactory.CreateAmazonKinesisClient();
+            
+var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(
+    kinesisClient: client, 
+    streamName: streamName, 
+    shardCount: shardCount
+);
+            
+var loggerConfig = new LoggerConfiguration()
+    .WriteTo.ColoredConsole()
+    .MinimumLevel.Debug();
 
 if (streamOk)
 {
     loggerConfig.WriteTo.AmazonKinesis(
-        kinesisClient: client, 
-        streamName: streamName, 
+        kinesisClient: client,
+        streamName: streamName,
         shardCount: shardCount,
+        period: TimeSpan.FromSeconds(2),
         bufferLogShippingInterval: TimeSpan.FromSeconds(5),
-        bufferBaseFilename: "./logs/kinesis-buffer",
-        period: TimeSpan.FromSeconds(2)
+        bufferBaseFilename: "./logs/kinesis-buffer"
     );
 }
 
-Log.Logger = loggerConfig
-    .MinimumLevel.Debug()
-    .CreateLogger();
+Log.Logger = loggerConfig.CreateLogger();
     
 ```
 
