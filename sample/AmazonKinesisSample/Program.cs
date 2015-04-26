@@ -26,7 +26,12 @@ namespace AmazonKinesisSample
             SelfLog.Out = Console.Out;
 
             var client = AWSClientFactory.CreateAmazonKinesisClient();
-            var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(client, streamName, shardCount);
+            
+            var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(
+                kinesisClient: client, 
+                streamName: streamName, 
+                shardCount: shardCount
+            );
             
             var loggerConfig = new LoggerConfiguration()
                 .WriteTo.ColoredConsole()
