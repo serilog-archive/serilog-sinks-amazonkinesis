@@ -18,15 +18,15 @@ SelfLog.Out = Console.Out;
 const string streamName = "firehose";
 const int shardCount = 2;
 
-var kinesisClient = AWSClientFactory.CreateAmazonKinesisClient();
-var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(kinesisClient, streamName, shardCount);
+var client = AWSClientFactory.CreateAmazonKinesisClient();
+var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(client, streamName, shardCount);
 
 var loggerConfig = new LoggerConfiguration();
 
 if (streamOk)
 {
     loggerConfig.WriteTo.AmazonKinesis(
-        kinesisClient: kinesisClient, 
+        kinesisClient: client, 
         streamName: streamName, 
         shardCount: shardCount,
         bufferLogShippingInterval: TimeSpan.FromSeconds(5),
