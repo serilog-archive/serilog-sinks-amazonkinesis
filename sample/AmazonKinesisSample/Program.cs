@@ -1,6 +1,5 @@
 ﻿// ReSharper disable NotAccessedVariable
 // ReSharper disable RedundantAssignment
-
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -19,32 +18,33 @@ namespace AmazonKinesisSample
 
     public class Program
     {
+        const string streamName = "firehose";
+        const int shardCount = 2;
+
         public static void Main()
         {
             SelfLog.Out = Console.Out;
 
-            var streamName = "firehose";
-            var shardCount = 2;
-            var kinesisClient = AWSClientFactory.CreateAmazonKinesisClient();
-            var streamAvailable = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(kinesisClient, streamName, shardCount);
+            var client = AWSClientFactory.CreateAmazonKinesisClient();
+            var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(client, streamName, shardCount);
+            
+            var loggerConfig = new LoggerConfiguration()
+                .WriteTo.ColoredConsole()
+                .MinimumLevel.Debug();
 
-            var loggerConfig = new LoggerConfiguration().WriteTo.ColoredConsole();
-
-            if (streamAvailable)
+            if (streamOk)
             {
                 loggerConfig.WriteTo.AmazonKinesis(
-                    kinesisClient: kinesisClient, 
-                    streamName: streamName, 
+                    kinesisClient: client,
+                    streamName: streamName,
                     shardCount: shardCount,
+                    period: TimeSpan.FromSeconds(2),
                     bufferLogShippingInterval: TimeSpan.FromSeconds(5),
-                    bufferBaseFilename: "./logs/kinesis-buffer",
-                    period: TimeSpan.FromSeconds(2)
+                    bufferBaseFilename: "./logs/kinesis-buffer"
                 );
             }
 
-            Log.Logger = loggerConfig
-                .MinimumLevel.Debug()
-                .CreateLogger();
+            Log.Logger = loggerConfig.CreateLogger();
 
             #region Debug
 

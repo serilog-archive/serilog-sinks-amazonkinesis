@@ -46,6 +46,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Serilog.1.5.1\lib\net45\Serilog.FullNetFx.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog.Sinks.AmazonKinesis">
+      <HintPath>..\..\packages\Serilog.Sinks.AmazonKinesis.1.5.10\lib\net45\Serilog.Sinks.AmazonKinesis.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,12 +60,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Serilog.Sinks.AmazonKinesis\Serilog.Sinks.AmazonKinesis.csproj">
-      <Project>{8164bde4-48fe-4a81-b33e-fee348904bb8}</Project>
-      <Name>Serilog.Sinks.AmazonKinesis</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
