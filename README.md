@@ -1,4 +1,4 @@
-# Serilog.Sinks.AmazonKinesis 
+# Serilog.Sinks.AmazonKinesis [![Build status](https://ci.appveyor.com/api/projects/status/mxoloqnptg3b9j47/branch/master?svg=true)](https://ci.appveyor.com/project/serilog/serilog-sinks-amazonkinesis/branch/master)
 
 A Serilog sink that writes events as documents to [Amazon Kinesis](http://aws.amazon.com/kinesis/).
 
