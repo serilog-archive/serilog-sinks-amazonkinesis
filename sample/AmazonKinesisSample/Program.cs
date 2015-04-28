@@ -17,7 +17,7 @@ namespace AmazonKinesisSample
     public class Program
     {
         const string streamName = "firehose";
-        const int shardCount = 2;
+        const int shardCount = 1;
 
         public static void Main()
         {
