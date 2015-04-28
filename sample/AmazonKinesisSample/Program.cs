@@ -1,6 +1,4 @@
-﻿// ReSharper disable NotAccessedVariable
-// ReSharper disable RedundantAssignment
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading;
 using Amazon;
@@ -26,13 +24,13 @@ namespace AmazonKinesisSample
             SelfLog.Out = Console.Out;
 
             var client = AWSClientFactory.CreateAmazonKinesisClient();
-            
+
             var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(
-                kinesisClient: client, 
-                streamName: streamName, 
+                kinesisClient: client,
+                streamName: streamName,
                 shardCount: shardCount
             );
-            
+
             var loggerConfig = new LoggerConfiguration()
                 .WriteTo.ColoredConsole()
                 .MinimumLevel.Debug();
@@ -51,7 +49,7 @@ namespace AmazonKinesisSample
 
             Log.Logger = loggerConfig.CreateLogger();
 
-            #region Debug
+#if false
 
             for (var i = 0; i < 50; i++)
             {
@@ -64,7 +62,7 @@ namespace AmazonKinesisSample
                 Console.Write(".");
             }
 
-            #endregion
+#endif
 
             LogStuff();
 

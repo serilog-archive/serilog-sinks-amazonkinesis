@@ -44,15 +44,15 @@ namespace Serilog.Sinks.AmazonKinesis
 
             _client = options.KinesisClient;
             _options = options;
-            
-            _formatter = options.CustomDurableFormatter ?? new JsonFormatter(
+
+            _formatter = options.CustomDurableFormatter ?? new CustomJsonFormatter(
                 omitEnclosingObject: false,
                 closingDelimiter: string.Empty,
                 renderMessage: true,
                 formatProvider: options.FormatProvider
             );
 
-            _durableFormatter = options.CustomDurableFormatter ?? new JsonFormatter(
+            _durableFormatter = options.CustomDurableFormatter ?? new CustomJsonFormatter(
                 omitEnclosingObject: false,
                 closingDelimiter: Environment.NewLine,
                 renderMessage: true,

@@ -44,7 +44,7 @@ namespace Serilog.Sinks.AmazonKinesis
                 {
                     case "DELETING":
                     {
-                        SelfLog.WriteLine("Stream '{0}' is {1}", streamName, state);
+                        SelfLog.WriteLine(string.Format("Stream '{0}' is {1}", streamName, state));
 
                         var startTime = DateTime.UtcNow;
                         var endTime = startTime + TimeSpan.FromSeconds(120);
@@ -62,7 +62,7 @@ namespace Serilog.Sinks.AmazonKinesis
                             return false;
                         }
 
-                        SelfLog.WriteLine("Creating stream '{0}'.", streamName);
+                        SelfLog.WriteLine(string.Format("Creating stream '{0}'.", streamName));
                         var response = CreateStream(kinesisClient, streamName, shardCount);
                         if (response == null)
                         {
@@ -78,7 +78,7 @@ namespace Serilog.Sinks.AmazonKinesis
                     case "ACTIVE":
                     case "UPDATING":
                     {
-                        SelfLog.WriteLine("Stream '{0}' is {1}", streamName, state);
+                        SelfLog.WriteLine(string.Format("Stream '{0}' is {1}", streamName, state));
                         return true;
                     }
                     default:
@@ -90,7 +90,7 @@ namespace Serilog.Sinks.AmazonKinesis
             }
             else
             {
-                SelfLog.WriteLine("Creating stream '{0}'.", streamName);
+                SelfLog.WriteLine(string.Format("Creating stream '{0}'.", streamName));
                 var response = CreateStream(kinesisClient, streamName, shardCount);
                 if (response == null)
                 {
@@ -113,7 +113,7 @@ namespace Serilog.Sinks.AmazonKinesis
                         string state = response.StreamDescription.StreamStatus;
                         if (state == "ACTIVE")
                         {
-                            SelfLog.WriteLine("Stream '{0'} is {1}", streamName, state);
+                            SelfLog.WriteLine(string.Format("Stream '{0}' is {1}", streamName, state));
                             return true;
                         }
                     }
