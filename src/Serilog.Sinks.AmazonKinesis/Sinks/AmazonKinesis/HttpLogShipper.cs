@@ -108,7 +108,6 @@ namespace Serilog.Sinks.AmazonKinesis
 
         void OnTick()
         {
-            SelfLog.WriteLine("KinesisSink... tick");
             try
             {
                 var count = 0;
