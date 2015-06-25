@@ -67,6 +67,7 @@ namespace Serilog
         /// <param name="bufferLogShippingInterval"></param>
         /// <param name="period"></param>
         /// <param name="minimumLogEventLevel"></param>
+        /// <param name="onLogSendError"></param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public static LoggerConfiguration AmazonKinesis(
@@ -79,9 +80,9 @@ namespace Serilog
             int? batchPostingLimit = null,
             TimeSpan? bufferLogShippingInterval = null,
             TimeSpan? period = null,
-            LogEventLevel? minimumLogEventLevel = null)
+            LogEventLevel? minimumLogEventLevel = null,
+            EventHandler<LogSendErrorEventArgs> onLogSendError = null)
         {
-            if (loggerConfiguration == null) throw new ArgumentNullException("loggerConfiguration");
             if (kinesisClient == null) throw new ArgumentNullException("kinesisClient");
             if (streamName == null) throw new ArgumentNullException("streamName");
 
@@ -92,20 +93,11 @@ namespace Serilog
                 BufferLogShippingInterval = KinesisSinkOptions.DefaultBufferLogShippingInterval,
                 Period = period ?? KinesisSinkOptions.DefaultPeriod,
                 BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptions.DefaultBatchPostingLimit,
-                MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum
+                MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
+                OnLogSendFail = onLogSendError
             };
 
-            ILogEventSink sink;
-            if (options.BufferBaseFilename == null)
-            {
-                sink = new KinesisSink(options);
-            }
-            else
-            {
-                sink = new DurableKinesisSink(options);
-            }
-
-            return loggerConfiguration.Sink(sink, options.MinimumLogEventLevel ?? LevelAlias.Minimum);
+            return AmazonKinesis(loggerConfiguration, options);
         }
     }
 }
