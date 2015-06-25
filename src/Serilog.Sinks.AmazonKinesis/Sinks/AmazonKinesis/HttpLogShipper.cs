@@ -188,7 +188,7 @@ namespace Serilog.Sinks.AmazonKinesis
                                         SelfLog.WriteLine("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
                                     }
                                     // fire event
-                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count)));
+                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count),null));
                                 }
                             }
                             else
@@ -227,7 +227,7 @@ namespace Serilog.Sinks.AmazonKinesis
             catch (Exception ex)
             {
                 SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, ex);
-                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream: {1})", _state.Options.StreamName, ex.Message)));
+                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _state.Options.StreamName),ex));
             }
             finally
             {
