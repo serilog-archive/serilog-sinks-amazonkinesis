@@ -76,6 +76,7 @@
     <Compile Include="Sinks\AmazonKinesis\KinesisSinkState.cs" />
     <Compile Include="Sinks\AmazonKinesis\KinesisApi.cs" />
     <Compile Include="Sinks\AmazonKinesis\DurableKinesisSink.cs" />
+    <Compile Include="Sinks\AmazonKinesis\LogSendErrorEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Serilog.snk">
