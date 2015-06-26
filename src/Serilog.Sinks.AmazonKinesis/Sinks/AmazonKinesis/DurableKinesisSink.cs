@@ -40,6 +40,10 @@ namespace Serilog.Sinks.AmazonKinesis
                null);
 
             _shipper = new HttpLogShipper(state);
+
+            if (options.OnLogSendError != null) {
+                _shipper.LogSendError += options.OnLogSendError;
+            }
         }
 
         public void Emit(LogEvent logEvent)

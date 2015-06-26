@@ -43,7 +43,8 @@ namespace AmazonKinesisSample
                     shardCount: shardCount,
                     period: TimeSpan.FromSeconds(2),
                     bufferLogShippingInterval: TimeSpan.FromSeconds(5),
-                    bufferBaseFilename: "./logs/kinesis-buffer"
+                    bufferBaseFilename: "./logs/kinesis-buffer",
+                    onLogSendError: OnLogSendError
                 );
             }
 
@@ -68,6 +69,10 @@ namespace AmazonKinesisSample
 
             Log.Fatal("That's all folks - and all done using {WorkingSet} bytes of RAM", Environment.WorkingSet);
             Console.ReadKey();
+        }
+
+        static void OnLogSendError(object sender, LogSendErrorEventArgs logSendErrorEventArgs) {
+            Console.WriteLine("Error: {0}", logSendErrorEventArgs.Message);
         }
 
         private static void LogStuff()

@@ -106,6 +106,10 @@ namespace Serilog.Sinks.AmazonKinesis
         /// </summary>
         public ITextFormatter CustomDurableFormatter { get; set; }
 
+        /// <summary>
+        /// An eventhandler which will be invoked whenever there is an error in log sending.
+        /// </summary>
+        public EventHandler<LogSendErrorEventArgs> OnLogSendError { get; set; }
         
         /// <summary>
         /// Configures the Amazon Kinesis sink defaults.

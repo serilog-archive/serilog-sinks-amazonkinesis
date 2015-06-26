@@ -36,6 +36,7 @@ namespace Serilog.Sinks.AmazonKinesis
         readonly string _bookmarkFilename;
         readonly string _logFolder;
         readonly string _candidateSearchPath;
+        public event EventHandler<LogSendErrorEventArgs> LogSendError;
 
         public HttpLogShipper(KinesisSinkState state)
         {
@@ -59,6 +60,15 @@ namespace Serilog.Sinks.AmazonKinesis
             CloseAndFlush();
         }
 
+        void OnLogSendError(LogSendErrorEventArgs e)
+        {
+            var handler = LogSendError;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+        
         void CloseAndFlush()
         {
             lock (_stateLock)
@@ -177,6 +187,8 @@ namespace Serilog.Sinks.AmazonKinesis
                                     {
                                         SelfLog.WriteLine("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
                                     }
+                                    // fire event
+                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count),null));
                                 }
                             }
                             else
@@ -215,6 +227,7 @@ namespace Serilog.Sinks.AmazonKinesis
             catch (Exception ex)
             {
                 SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, ex);
+                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _state.Options.StreamName),ex));
             }
             finally
             {
