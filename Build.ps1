@@ -33,7 +33,7 @@ function Invoke-MSBuild($solution, $customLogger)
 
 function Invoke-NuGetPackSpec($nuspec, $version)
 {
-    nuget pack $nuspec -Version $version
+    nuget pack $nuspec -Version $version-awssdkbeta3
 }
 
 function Invoke-Build($majorMinor, $patch, $customLogger, $notouch)
