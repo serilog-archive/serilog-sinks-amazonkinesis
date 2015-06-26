@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using Amazon;
+using Amazon.Kinesis;
 using Serilog;
 using Serilog.Debugging;
 using Serilog.Sinks.AmazonKinesis;
@@ -23,7 +24,7 @@ namespace AmazonKinesisSample
         {
             SelfLog.Out = Console.Out;
 
-            var client = AWSClientFactory.CreateAmazonKinesisClient();
+            var client = new AmazonKinesisClient();
 
             var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(
                 kinesisClient: client,
