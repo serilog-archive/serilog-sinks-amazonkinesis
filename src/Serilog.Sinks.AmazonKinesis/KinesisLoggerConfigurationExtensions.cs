@@ -94,7 +94,7 @@ namespace Serilog
                 Period = period ?? KinesisSinkOptions.DefaultPeriod,
                 BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptions.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
-                OnLogSendFail = onLogSendError
+                OnLogSendError = onLogSendError
             };
 
             return AmazonKinesis(loggerConfiguration, options);

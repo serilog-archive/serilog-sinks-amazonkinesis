@@ -109,7 +109,7 @@ namespace Serilog.Sinks.AmazonKinesis
         /// <summary>
         /// An eventhandler which will be invoked whenever there is an error in log sending.
         /// </summary>
-        public EventHandler<LogSendErrorEventArgs> OnLogSendFail { get; set; }
+        public EventHandler<LogSendErrorEventArgs> OnLogSendError { get; set; }
         
         /// <summary>
         /// Configures the Amazon Kinesis sink defaults.

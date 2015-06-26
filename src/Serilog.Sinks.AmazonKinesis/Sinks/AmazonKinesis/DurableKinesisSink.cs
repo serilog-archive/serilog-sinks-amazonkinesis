@@ -41,8 +41,8 @@ namespace Serilog.Sinks.AmazonKinesis
 
             _shipper = new HttpLogShipper(state);
 
-            if (options.OnLogSendFail != null) {
-                _shipper.LogSendFail += options.OnLogSendFail;
+            if (options.OnLogSendError != null) {
+                _shipper.LogSendError += options.OnLogSendError;
             }
         }
 

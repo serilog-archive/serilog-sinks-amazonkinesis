@@ -36,7 +36,7 @@ namespace Serilog.Sinks.AmazonKinesis
         readonly string _bookmarkFilename;
         readonly string _logFolder;
         readonly string _candidateSearchPath;
-        public event EventHandler<LogSendErrorEventArgs> LogSendFail;
+        public event EventHandler<LogSendErrorEventArgs> LogSendError;
 
         public HttpLogShipper(KinesisSinkState state)
         {
@@ -62,7 +62,7 @@ namespace Serilog.Sinks.AmazonKinesis
 
         void OnLogSendError(LogSendErrorEventArgs e)
         {
-            var handler = LogSendFail;
+            var handler = LogSendError;
             if (handler != null)
             {
                 handler(this, e);
