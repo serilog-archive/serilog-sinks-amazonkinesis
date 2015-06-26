@@ -12,7 +12,8 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>serilog logging aws amazon kinesis structured logging</tags>
     <dependencies>
-        <dependency id="AWSSDK" version="2.3.32.0" />
+        <dependency id="AWSSDK.Core" version="3.0.0.2-preview" />
+        <dependency id="AWSSDK.Kinesis" version="3.0.1.0-preview" />
         <dependency id="Serilog" version="1.5.1" />
     </dependencies>
   </metadata>
