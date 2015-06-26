@@ -36,6 +36,7 @@ namespace Serilog.Sinks.AmazonKinesis
         readonly string _bookmarkFilename;
         readonly string _logFolder;
         readonly string _candidateSearchPath;
+        public event EventHandler<LogSendErrorEventArgs> LogSendError;
 
         public HttpLogShipper(KinesisSinkState state)
         {
@@ -59,6 +60,15 @@ namespace Serilog.Sinks.AmazonKinesis
             CloseAndFlush();
         }
 
+        void OnLogSendError(LogSendErrorEventArgs e)
+        {
+            var handler = LogSendError;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+        
         void CloseAndFlush()
         {
             lock (_stateLock)
@@ -119,10 +129,12 @@ namespace Serilog.Sinks.AmazonKinesis
 
                     using (var bookmark = File.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                     {
+                        long startingOffset;
                         long nextLineBeginsAtOffset;
                         string currentFilePath;
 
                         TryReadBookmark(bookmark, out nextLineBeginsAtOffset, out currentFilePath);
+                        SelfLog.WriteLine("Bookmark is currently at offset {0} in '{1}'", nextLineBeginsAtOffset, currentFilePath);
 
                         var fileSet = GetFileSet();
 
@@ -139,7 +151,7 @@ namespace Serilog.Sinks.AmazonKinesis
                             var records = new List<PutRecordsRequestEntry>();
                             using (var current = File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
-                                current.Position = nextLineBeginsAtOffset;
+                                startingOffset = current.Position = nextLineBeginsAtOffset;
 
                                 string nextLine;
                                 while (count < _batchPostingLimit && TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
@@ -163,8 +175,10 @@ namespace Serilog.Sinks.AmazonKinesis
                                     Records = records
                                 };
 
+                                SelfLog.WriteLine("Writing {0} records to kinesis", count);
                                 PutRecordsResponse response = _state.KinesisClient.PutRecords(request);
 
+                                SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
 
                                 if (response.FailedRecordCount > 0)
@@ -173,23 +187,34 @@ namespace Serilog.Sinks.AmazonKinesis
                                     {
                                         SelfLog.WriteLine("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
                                     }
+                                    // fire event
+                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count),null));
                                 }
                             }
                             else
                             {
+                                SelfLog.WriteLine("Found no records to process");
+    
                                 // Only advance the bookmark if no other process has the
                                 // current file locked, and its length is as we found it.
 
-                                if (fileSet.Length == 2 && fileSet.First() == currentFilePath && IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset))
+                                var bufferedFilesCount = fileSet.Length;
+                                var isProcessingFirstFile = fileSet.First().Equals(currentFilePath,StringComparison.InvariantCultureIgnoreCase);
+                                var isFirstFileUnlocked = IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset);
+                                //SelfLog.WriteLine("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; IsFirstFileUnlocked: {2}", bufferedFilesCount, isProcessingFirstFile, isFirstFileUnlocked);
+
+                                if (bufferedFilesCount == 2 && isProcessingFirstFile && isFirstFileUnlocked)
                                 {
+                                    SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
                                     WriteBookmark(bookmark, 0, fileSet[1]);
                                 }
 
-                                if (fileSet.Length > 2)
+                                if (bufferedFilesCount > 2)
                                 {
                                     // Once there's a third file waiting to ship, we do our
                                     // best to move on, though a lock on the current file
                                     // will delay this.
+                                    SelfLog.WriteLine("Deleting '{0}'", fileSet[0]);
 
                                     File.Delete(fileSet[0]);
                                 }
@@ -202,6 +227,7 @@ namespace Serilog.Sinks.AmazonKinesis
             catch (Exception ex)
             {
                 SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, ex);
+                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _state.Options.StreamName),ex));
             }
             finally
             {
