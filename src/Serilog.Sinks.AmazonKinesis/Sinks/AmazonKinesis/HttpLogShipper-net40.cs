@@ -285,10 +285,8 @@ namespace Serilog.Sinks.AmazonKinesis
 
             current.Position = nextStart;
 
-            using (var reader = new StreamReader(current, Encoding.UTF8, false, 128))
-            {
-                nextLine = reader.ReadLine();
-            }
+            var reader = new StreamReader(current, Encoding.UTF8, false, 128);
+            nextLine = reader.ReadLine();
 
             if (nextLine == null)
                 return false;
