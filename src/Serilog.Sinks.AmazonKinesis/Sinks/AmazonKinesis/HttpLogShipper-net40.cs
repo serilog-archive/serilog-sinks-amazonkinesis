@@ -285,6 +285,7 @@ namespace Serilog.Sinks.AmazonKinesis
 
             current.Position = nextStart;
 
+            // Important not to dispose this StreamReader as the stream must remain open.
             var reader = new StreamReader(current, Encoding.UTF8, false, 128);
             nextLine = reader.ReadLine();
 
@@ -306,10 +307,9 @@ namespace Serilog.Sinks.AmazonKinesis
             if (bookmark.Length != 0)
             {
                 string current;
-                using (var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128))
-                {
-                    current = reader.ReadLine();
-                }
+                // Important not to dispose this StreamReader as the stream must remain open.
+                var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128);
+                current = reader.ReadLine();
 
                 if (current != null)
                 {
