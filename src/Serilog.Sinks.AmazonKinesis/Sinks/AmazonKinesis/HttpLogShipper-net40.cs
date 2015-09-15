@@ -266,10 +266,10 @@ namespace Serilog.Sinks.AmazonKinesis
 
         static void WriteBookmark(FileStream bookmark, long nextLineBeginsAtOffset, string currentFile)
         {
-            using (var writer = new StreamWriter(bookmark))
-            {
-                writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
-            }
+            // Important not to dispose this StreamReader as the stream must remain open.
+            var writer = new StreamWriter(bookmark);
+            writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
+            writer.Flush();
         }
 
         // It would be ideal to chomp whitespace here, but not required.
