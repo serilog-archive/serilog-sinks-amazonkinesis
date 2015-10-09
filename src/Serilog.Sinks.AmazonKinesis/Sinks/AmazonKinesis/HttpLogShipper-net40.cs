@@ -251,9 +251,17 @@ namespace Serilog.Sinks.AmazonKinesis
             catch (IOException ex)
             {
                 var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
-                if (errorCode != 32 && errorCode != 33)
+                if (errorCode == 32)
                 {
-                    SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", file, ex);
+                    SelfLog.WriteLine("Log file {0} is locked by another thread, bookmark is not advanced: {1}", currentFilePath, ex);
+                }
+                else if (errorCode == 33)
+                {
+                    SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", currentFilePath, ex);
+                }
+                else
+                {
+                    throw;
                 }
             }
             catch (Exception ex)
