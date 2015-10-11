@@ -68,7 +68,7 @@ namespace Serilog.Sinks.AmazonKinesis
                 handler(this, e);
             }
         }
-        
+
         void CloseAndFlush()
         {
             lock (_stateLock)
@@ -188,25 +188,24 @@ namespace Serilog.Sinks.AmazonKinesis
                                         SelfLog.WriteLine("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
                                     }
                                     // fire event
-                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count),null));
+                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count), null));
                                 }
                             }
                             else
                             {
                                 SelfLog.WriteLine("Found no records to process");
-    
+
                                 // Only advance the bookmark if no other process has the
                                 // current file locked, and its length is as we found it.
 
                                 var bufferedFilesCount = fileSet.Length;
-                                var isProcessingFirstFile = fileSet.First().Equals(currentFilePath,StringComparison.InvariantCultureIgnoreCase);
-                                var isFirstFileUnlocked = IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset);
+                                var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.InvariantCultureIgnoreCase);
+
                                 //SelfLog.WriteLine("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; IsFirstFileUnlocked: {2}", bufferedFilesCount, isProcessingFirstFile, isFirstFileUnlocked);
 
-                                if (bufferedFilesCount == 2 && isProcessingFirstFile && isFirstFileUnlocked)
+                                if (bufferedFilesCount == 2 && isProcessingFirstFile)
                                 {
-                                    SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
-                                    WriteBookmark(bookmark, 0, fileSet[1]);
+                                    TryWriteBookmark(currentFilePath, nextLineBeginsAtOffset, fileSet[1], bookmark);
                                 }
 
                                 if (bufferedFilesCount > 2)
@@ -222,12 +221,13 @@ namespace Serilog.Sinks.AmazonKinesis
                         }
                     }
                 }
+
                 while (count == _batchPostingLimit);
             }
             catch (Exception ex)
             {
                 SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, ex);
-                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _state.Options.StreamName),ex));
+                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _state.Options.StreamName), ex));
             }
             finally
             {
@@ -239,29 +239,41 @@ namespace Serilog.Sinks.AmazonKinesis
             }
         }
 
-        static bool IsUnlockedAtLength(string file, long maxLen)
+        static void TryWriteBookmark(string currentFilePath, long nextLineBeginsAtOffset, string bufferedFileName, FileStream bookmark)
         {
             try
             {
-                using (var fileStream = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                using (var fileStream = File.Open(currentFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                 {
-                    return fileStream.Length <= maxLen;
+                    if (fileStream.Length <= nextLineBeginsAtOffset)
+                    {
+                        SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", currentFilePath, bufferedFileName);
+                        WriteBookmark(bookmark, 0, bufferedFileName);
+                    }
                 }
             }
+
             catch (IOException ex)
             {
                 var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
-                if (errorCode != 32 && errorCode != 33)
+                if (errorCode == 32)
                 {
-                    SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", file, ex);
+                    SelfLog.WriteLine("Log file {0} is locked by another process, bookmark is not advanced: {1}", currentFilePath, ex);
+                }
+                else if (errorCode == 33)
+                {
+                    SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", currentFilePath, ex);
+                }
+                else
+                {
+                    throw;
                 }
             }
+
             catch (Exception ex)
             {
-                SelfLog.WriteLine("Unexpected exception while testing locked status of {0}: {1}", file, ex);
+                SelfLog.WriteLine("Unexpected exception while testing locked status of {0}: {1}", currentFilePath, ex);
             }
-
-            return false;
         }
 
         static void WriteBookmark(FileStream bookmark, long nextLineBeginsAtOffset, string currentFile)
