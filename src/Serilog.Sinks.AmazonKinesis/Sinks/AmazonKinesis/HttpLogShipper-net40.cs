@@ -200,10 +200,10 @@ namespace Serilog.Sinks.AmazonKinesis
 
                                 var bufferedFilesCount = fileSet.Length;
                                 var isProcessingFirstFile = fileSet.First().Equals(currentFilePath,StringComparison.InvariantCultureIgnoreCase);
-                                var isFirstFileUnlocked = IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset);
+
                                 //SelfLog.WriteLine("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; IsFirstFileUnlocked: {2}", bufferedFilesCount, isProcessingFirstFile, isFirstFileUnlocked);
 
-                                if (bufferedFilesCount == 2 && isProcessingFirstFile && isFirstFileUnlocked)
+                                if (bufferedFilesCount == 2 && isProcessingFirstFile && IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset))
                                 {
                                     SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
                                     WriteBookmark(bookmark, 0, fileSet[1]);
@@ -251,9 +251,18 @@ namespace Serilog.Sinks.AmazonKinesis
             catch (IOException ex)
             {
                 var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
-                if (errorCode != 32 && errorCode != 33)
+
+                if (errorCode == 32)
+                {
+                    SelfLog.WriteLine("Log file {0} is locked by another process, bookmark is not advanced: {1}", file, ex);
+                }
+                else if (errorCode == 33)
                 {
                     SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", file, ex);
+                }
+                else
+                {
+                    throw;
                 }
             }
             catch (Exception ex)
