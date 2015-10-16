@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using Amazon;
 using Amazon.Kinesis;
 using Serilog;
 using Serilog.Debugging;
-using Serilog.Sinks.AmazonKinesis;
+using Serilog.Sinks.Amazon.Kinesis;
+using Serilog.Sinks.Amazon.Kinesis.Stream;
 
 namespace AmazonKinesisSample
 {

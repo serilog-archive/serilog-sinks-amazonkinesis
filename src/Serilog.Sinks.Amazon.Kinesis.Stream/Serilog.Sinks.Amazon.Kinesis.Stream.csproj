@@ -73,14 +73,12 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="KinesisLoggerConfigurationExtensions.cs" />
-    <Compile Include="Sinks\AmazonKinesis\CustomJsonFormatter.cs" />
     <Compile Include="Sinks\AmazonKinesis\HttpLogShipper.cs" />
     <Compile Include="Sinks\AmazonKinesis\KinesisSink.cs" />
     <Compile Include="Sinks\AmazonKinesis\KinesisSinkOptions.cs" />
     <Compile Include="Sinks\AmazonKinesis\KinesisSinkState.cs" />
     <Compile Include="Sinks\AmazonKinesis\KinesisApi.cs" />
     <Compile Include="Sinks\AmazonKinesis\DurableKinesisSink.cs" />
-    <Compile Include="Sinks\AmazonKinesis\LogSendErrorEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Serilog.snk">
@@ -91,6 +89,11 @@
     </None>
     <None Include="Serilog.Sinks.AmazonKinesis.nuspec" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Serilog.Sinks.Amazon.Kinesis\Serilog.Sinks.Amazon.Kinesis.csproj">
+      <Project>{9cddc147-93bb-47dc-899c-b41384d7ae23}</Project>
+      <Name>Serilog.Sinks.Amazon.Kinesis</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
