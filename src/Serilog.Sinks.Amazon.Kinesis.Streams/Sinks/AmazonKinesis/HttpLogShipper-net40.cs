@@ -22,7 +22,7 @@ using System.Threading;
 using Amazon.Kinesis.Model;
 using Serilog.Debugging;
 
-namespace Serilog.Sinks.AmazonKinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Streams
 {
     class HttpLogShipper : IDisposable
     {

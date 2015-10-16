@@ -17,7 +17,8 @@ using Amazon.Kinesis;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Sinks.AmazonKinesis;
+using Serilog.Sinks.Amazon.Kinesis;
+using Serilog.Sinks.Amazon.Kinesis.Streams;
 
 namespace Serilog
 {

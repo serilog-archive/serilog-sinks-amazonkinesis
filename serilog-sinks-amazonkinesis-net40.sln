@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{E9D1B5
 		assets\Serilog.snk = assets\Serilog.snk
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.AmazonKinesis-net40", "src\Serilog.Sinks.AmazonKinesis\Serilog.Sinks.AmazonKinesis-net40.csproj", "{8164BDE4-48FE-4A81-B33E-FEE348904BB8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesis.Streams-net40", "src\Serilog.Sinks.Amazon.Kinesis.Streams\Serilog.Sinks.Amazon.Kinesis.Streams-net40.csproj", "{8164BDE4-48FE-4A81-B33E-FEE348904BB8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesis", "src\Serilog.Sinks.Amazon.Kinesis\Serilog.Sinks.Amazon.Kinesis.csproj", "{9CDDC147-93BB-47DC-899C-B41384D7AE23}"
 EndProject
