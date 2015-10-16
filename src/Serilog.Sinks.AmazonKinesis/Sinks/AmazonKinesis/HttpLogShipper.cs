@@ -178,9 +178,6 @@ namespace Serilog.Sinks.AmazonKinesis
                                 SelfLog.WriteLine("Writing {0} records to kinesis", count);
                                 PutRecordsResponse response = _state.KinesisClient.PutRecords(request);
 
-                                SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
-                                WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
-
                                 if (response.FailedRecordCount > 0)
                                 {
                                     foreach (var record in response.Records)
@@ -189,6 +186,12 @@ namespace Serilog.Sinks.AmazonKinesis
                                     }
                                     // fire event
                                     OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count),null));
+                                }
+                                else
+                                {
+                                    // Advance the bookmark only if we successfully written to Kinesis Stream
+                                    SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
+                                    WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
                                 }
                             }
                             else
