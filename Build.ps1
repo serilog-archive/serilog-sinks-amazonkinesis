@@ -1,5 +1,5 @@
 param(
-    [String] $majorMinor = "0.0",  # 2.0
+    [String] $majorMinor = "2.0",  # 2.0
     [String] $patch = "0",         # $env:APPVEYOR_BUILD_VERSION
     [String] $customLogger = "",   # C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll
     [Switch] $notouch
@@ -8,9 +8,9 @@ param(
 function Set-AssemblyVersions($informational, $assembly)
 {
     (Get-Content assets/CommonAssemblyInfo.cs) |
-        ForEach-Object { $_ -replace """1.0.0.0""", """$assembly""" } |
-        ForEach-Object { $_ -replace """1.0.0""", """$informational""" } |
-        ForEach-Object { $_ -replace """1.1.1.1""", """$($informational).0""" } |
+        ForEach-Object { $_ -replace """0.0.0.0""", """$assembly""" } |
+        ForEach-Object { $_ -replace """0.0.0""", """$informational""" } |
+        ForEach-Object { $_ -replace """0.1.1.1""", """$($informational).0""" } |
         Set-Content assets/CommonAssemblyInfo.cs
 }
 
@@ -55,11 +55,12 @@ function Invoke-Build($majorMinor, $patch, $customLogger, $notouch)
     }
 
     Install-NuGetPackages $solution
-    
+    Install-NuGetPackages $solution4
+
     Invoke-MSBuild $solution4 $customLogger
     Invoke-MSBuild $solution $customLogger
 
-    Invoke-NuGetPackSpec "src/Serilog.Sinks.AmazonKinesis/Serilog.Sinks.AmazonKinesis.nuspec" $package
+    Invoke-NuGetPackSpec "src/Serilog.Sinks.AmazonKinesis.nuspec" $package
 }
 
 $ErrorActionPreference = "Stop"
