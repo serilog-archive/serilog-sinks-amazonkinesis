@@ -1,11 +1,11 @@
 ﻿// Copyright 2014 Serilog Contributors
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,20 +17,20 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.RollingFile;
 
-namespace Serilog.Sinks.AmazonKinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 {
-    class DurableKinesisSink : ILogEventSink, IDisposable
+    class DurableKinesisFirehoseSink : ILogEventSink, IDisposable
     {
         readonly HttpLogShipper _shipper;
         readonly RollingFileSink _sink;
 
-        public DurableKinesisSink(KinesisSinkOptions options)
+        public DurableKinesisFirehoseSink(KinesisFirehoseSinkOptions options)
         {
-            var state = KinesisSinkState.Create(options);
+            var state = KinesisFirehoseSinkState.Create(options);
 
             if (string.IsNullOrWhiteSpace(options.BufferBaseFilename))
             {
-                throw new ArgumentException("Cannot create the durable Amazon Kinesis sink without a buffer base file name.");
+                throw new ArgumentException("Cannot create the durable Amazon Kinesis Firehose sink without a buffer base file name.");
             }
 
             _sink = new RollingFileSink(

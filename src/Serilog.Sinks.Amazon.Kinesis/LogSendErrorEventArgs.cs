@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace Serilog.Sinks.AmazonKinesis
+namespace Serilog.Sinks.Amazon.Kinesis
 {
     /// <summary>
     /// Args for event raised when log sending errors.
@@ -12,7 +12,8 @@ namespace Serilog.Sinks.AmazonKinesis
         /// </summary>
         /// <param name="message"></param>
         /// <param name="exception"></param>
-        public LogSendErrorEventArgs(string message, Exception exception) {
+        public LogSendErrorEventArgs(string message, Exception exception)
+        {
             Message = message;
             Exception = exception;
         }

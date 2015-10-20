@@ -2,9 +2,9 @@
 using System.IO;
 using Serilog.Formatting.Json;
 
-namespace Serilog.Sinks.AmazonKinesis
+namespace Serilog.Sinks.Amazon.Kinesis
 {
-    internal class CustomJsonFormatter : JsonFormatter
+    public class CustomJsonFormatter : JsonFormatter
     {
         public CustomJsonFormatter(bool omitEnclosingObject = false, string closingDelimiter = null, bool renderMessage = false, IFormatProvider formatProvider = null)
             : base(omitEnclosingObject, closingDelimiter, renderMessage, formatProvider)

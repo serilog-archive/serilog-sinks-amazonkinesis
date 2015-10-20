@@ -19,14 +19,15 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using Amazon.Kinesis.Model;
+using Amazon.KinesisFirehose.Model;
 using Serilog.Debugging;
+using Serilog.Sinks.Amazon.Kinesis;
 
-namespace Serilog.Sinks.AmazonKinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 {
     class HttpLogShipper : IDisposable
     {
-        private readonly KinesisSinkState _state;
+        private readonly KinesisFirehoseSinkState _state;
 
         readonly int _batchPostingLimit;
         readonly Timer _timer;
@@ -38,7 +39,7 @@ namespace Serilog.Sinks.AmazonKinesis
         readonly string _candidateSearchPath;
         public event EventHandler<LogSendErrorEventArgs> LogSendError;
 
-        public HttpLogShipper(KinesisSinkState state)
+        public HttpLogShipper(KinesisFirehoseSinkState state)
         {
             _state = state;
             _period = _state.Options.BufferLogShippingInterval ?? TimeSpan.FromSeconds(5);
@@ -148,7 +149,7 @@ namespace Serilog.Sinks.AmazonKinesis
                         {
                             count = 0;
 
-                            var records = new List<PutRecordsRequestEntry>();
+                            var records = new List<Record>();
                             using (var current = File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 startingOffset = current.Position = nextLineBeginsAtOffset;
@@ -158,9 +159,8 @@ namespace Serilog.Sinks.AmazonKinesis
                                 {
                                     ++count;
                                     var bytes = Encoding.UTF8.GetBytes(nextLine);
-                                    var record = new PutRecordsRequestEntry
+                                    var record = new Record
                                     {
-                                        PartitionKey = Guid.NewGuid().ToString(),
                                         Data = new MemoryStream(bytes)
                                     };
                                     records.Add(record);
@@ -169,27 +169,34 @@ namespace Serilog.Sinks.AmazonKinesis
 
                             if (count > 0)
                             {
-                                var request = new PutRecordsRequest
+                                var request = new PutRecordBatchRequest
                                 {
-                                    StreamName = _state.Options.StreamName,
+                                    DeliveryStreamName = _state.Options.StreamName,
                                     Records = records
                                 };
 
-                                SelfLog.WriteLine("Writing {0} records to kinesis", count);
-                                PutRecordsResponse response = _state.KinesisClient.PutRecords(request);
+                                SelfLog.WriteLine("Writing {0} records to Kinesis Firehose", count);
+                                PutRecordBatchResponse response = _state.KinesisFirehoseClient.PutRecordBatch(request);
 
-                                if (response.FailedRecordCount > 0)
+                                if (response.FailedPutCount > 0)
                                 {
-                                    foreach (var record in response.Records)
+                                    foreach (var entry in response.RequestResponses)
                                     {
-                                        SelfLog.WriteLine("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
+                                        if (entry.ErrorCode != null)
+                                        {
+                                            SelfLog.WriteLine(
+                                                "Kinesis Firehose failed to index record in stream '{0}'. {1} {2} ",
+                                                _state.Options.StreamName, entry.ErrorCode, entry.ErrorMessage);
+                                        }
                                     }
                                     // fire event
-                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count), null));
+                                    OnLogSendError(
+                                        new LogSendErrorEventArgs(
+                                            string.Format("Error writing records to {0} ({1} of {2} records failed)",
+                                                _state.Options.StreamName, response.FailedPutCount, count), null));
                                 }
                                 else
                                 {
-                                    // Advance the bookmark only if we successfully written to Kinesis Stream
                                     SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
                                     WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
                                 }
