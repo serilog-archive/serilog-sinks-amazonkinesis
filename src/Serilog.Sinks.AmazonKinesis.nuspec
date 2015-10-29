@@ -22,9 +22,9 @@
     <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin40\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin40\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin40\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net40" />
     <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.dll" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.pdb" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.xml" target="lib\net45" />
