@@ -41,7 +41,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
         public HttpLogShipper(KinesisSinkState state)
         {
             _state = state;
-            _period = _state.Options.BufferLogShippingInterval ?? TimeSpan.FromSeconds(5);
+            _period = _state.Options.Period;
             _batchPostingLimit = _state.Options.BatchPostingLimit;
             _bookmarkFilename = IO.Path.GetFullPath(_state.Options.BufferBaseFilename + ".bookmark");
             _logFolder = IO.Path.GetDirectoryName(_bookmarkFilename);

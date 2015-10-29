@@ -64,7 +64,6 @@ namespace Serilog
         /// <param name="bufferBaseFilename"></param>
         /// <param name="bufferFileSizeLimitBytes"></param>
         /// <param name="batchPostingLimit"></param>
-        /// <param name="bufferLogShippingInterval"></param>
         /// <param name="period"></param>
         /// <param name="minimumLogEventLevel"></param>
         /// <param name="onLogSendError"></param>
@@ -77,7 +76,6 @@ namespace Serilog
             string bufferBaseFilename = null,
             int? bufferFileSizeLimitBytes = null,
             int? batchPostingLimit = null,
-            TimeSpan? bufferLogShippingInterval = null,
             TimeSpan? period = null,
             LogEventLevel? minimumLogEventLevel = null,
             EventHandler<LogSendErrorEventArgs> onLogSendError = null)
@@ -89,7 +87,6 @@ namespace Serilog
             {
                 BufferFileSizeLimitBytes = bufferFileSizeLimitBytes,
                 BufferBaseFilename = bufferBaseFilename,
-                BufferLogShippingInterval = KinesisFirehoseSinkOptions.DefaultBufferLogShippingInterval,
                 Period = period ?? KinesisFirehoseSinkOptions.DefaultPeriod,
                 BatchPostingLimit = batchPostingLimit ?? KinesisFirehoseSinkOptions.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
