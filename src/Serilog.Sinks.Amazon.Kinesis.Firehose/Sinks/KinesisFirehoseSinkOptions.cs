@@ -40,6 +40,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         /// </summary>
         public static int DefaultBatchPostingLimit = 500;
 
+        string _bufferBaseFilename;
+
         /// <summary>
         /// The default stream name to use for the log events.
         /// </summary>
@@ -73,7 +75,11 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         /// <summary>
         /// Optional path to directory that can be used as a log shipping buffer for increasing the reliabilty of the log forwarding.
         /// </summary>
-        public string BufferBaseFilename { get; set; }
+        public string BufferBaseFilename
+        {
+            get { return _bufferBaseFilename + ".firehose"; }
+            set { _bufferBaseFilename = value; }
+        }
 
         /// <summary>
         /// The maximum size, in bytes, to which the buffer log file for a specific date will be allowed to grow. 
