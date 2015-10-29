@@ -30,11 +30,6 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
         public static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
 
         /// <summary>
-        /// The default interval between checking the buffer files. Defaults to 2 seconds 
-        /// </summary>
-        public static TimeSpan DefaultBufferLogShippingInterval = TimeSpan.FromSeconds(2);
-
-        /// <summary>
         /// The default maximum number of events to post in a single batch. Defaults to 500.
         /// </summary>
         public static int DefaultBatchPostingLimit = 500;
@@ -65,7 +60,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
         public int BatchPostingLimit { get; set; }
 
         /// <summary>
-        /// The time to wait between checking for event batches. Defaults to 2 seconds.
+        /// The time to wait between sending event batches.
         /// </summary>
         public TimeSpan Period { get; set; }
 
@@ -93,11 +88,6 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
         /// By default no limit will be applied.
         /// </summary>
         public long? BufferFileSizeLimitBytes { get; set; }
-
-        /// <summary>
-        /// The interval between checking the buffer files. Defaults to 2 seconds 
-        /// </summary>
-        public TimeSpan? BufferLogShippingInterval { get; set; }
 
         /// <summary>
         /// Customizes the formatter used when converting the log events into Amazon Kinesis documents. 

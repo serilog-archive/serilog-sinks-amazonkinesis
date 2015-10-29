@@ -42,7 +42,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         public HttpLogShipper(KinesisFirehoseSinkState state)
         {
             _state = state;
-            _period = _state.Options.BufferLogShippingInterval ?? TimeSpan.FromSeconds(5);
+            _period = _state.Options.Period;
             _batchPostingLimit = _state.Options.BatchPostingLimit;
             _bookmarkFilename = Path.GetFullPath(_state.Options.BufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
