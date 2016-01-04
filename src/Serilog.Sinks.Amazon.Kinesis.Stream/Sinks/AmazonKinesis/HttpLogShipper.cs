@@ -20,7 +20,7 @@ using System.Text;
 using System.Threading;
 using Amazon.Kinesis.Model;
 using Serilog.Debugging;
-using Serilog.Logging;
+using Serilog.Sinks.Amazon.Kinesis.Stream.Logging;
 using IO = System.IO;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream
