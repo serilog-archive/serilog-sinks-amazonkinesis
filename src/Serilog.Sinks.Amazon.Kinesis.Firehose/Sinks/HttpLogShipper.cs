@@ -21,7 +21,6 @@ using System.Text;
 using System.Threading;
 using Amazon.KinesisFirehose.Model;
 using Serilog.Debugging;
-using Serilog.Sinks.Amazon.Kinesis;
 using Serilog.Sinks.Amazon.Kinesis.Firehose.Logging;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Firehose

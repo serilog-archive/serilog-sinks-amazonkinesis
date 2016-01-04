@@ -46,17 +46,17 @@ using System.Diagnostics.CodeAnalysis;
 // If you copied this file manually, you need to change all "YourRootNameSpace" so not to clash with other libraries
 // that use LibLog
 #if LIBLOG_PROVIDERS_ONLY
-namespace Serilog.LibLog
+namespace Serilog.Sinks.Amazon.Kinesis.Stream.LibLog
 #else
-namespace Serilog.Logging
+namespace Serilog.Sinks.Amazon.Kinesis.Stream.Logging
 #endif
 {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
 #if LIBLOG_PROVIDERS_ONLY
-    using Serilog.LibLog.LogProviders;
+    using Serilog.Sinks.Amazon.Kinesis.Stream.LibLog.LogProviders;
 #else
-    using Serilog.Logging.LogProviders;
+    using Serilog.Sinks.Amazon.Kinesis.Stream.Logging.LogProviders;
 #endif
     using System;
 #if !LIBLOG_PROVIDERS_ONLY
@@ -722,9 +722,9 @@ namespace Serilog.Logging
 }
 
 #if LIBLOG_PROVIDERS_ONLY
-namespace Serilog.LibLog.LogProviders
+namespace Serilog.Sinks.Amazon.Kinesis.Stream.LibLog.LogProviders
 #else
-namespace Serilog.Logging.LogProviders
+namespace Serilog.Sinks.Amazon.Kinesis.Stream.Logging.LogProviders
 #endif
 {
     using System;
