@@ -180,7 +180,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
                                     Records = records
                                 };
 
-                                Logger.TraceFormat("Writing {0} records to kinesis", count);
+                                Logger.TraceFormat("Writing {0} records to firehose", count);
                                 PutRecordBatchResponse response = _state.KinesisFirehoseClient.PutRecordBatch(request);
 
                                 if (response.FailedPutCount > 0)
@@ -190,10 +190,10 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
                                         if (record.ErrorCode != null)
                                         {
                                             SelfLog.WriteLine(
-                                                "Kinesis Firehose failed to index record in stream '{0}'. {1} {2} ",
+                                                "Firehose failed to index record in stream '{0}'. {1} {2} ",
                                                 _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
                                         }
-                                        Logger.TraceFormat("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
+                                        Logger.TraceFormat("Firehose failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
                                     }
                                     // fire event
                                     OnLogSendError(
