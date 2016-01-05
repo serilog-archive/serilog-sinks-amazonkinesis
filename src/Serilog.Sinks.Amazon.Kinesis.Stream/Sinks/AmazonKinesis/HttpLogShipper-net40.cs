@@ -21,11 +21,13 @@ using System.Text;
 using System.Threading;
 using Amazon.Kinesis.Model;
 using Serilog.Debugging;
+using Serilog.Sinks.Amazon.Kinesis.Stream.Logging;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream
 {
     class HttpLogShipper : IDisposable
     {
+        private static readonly ILog Logger = LogProvider.For<HttpLogShipper>();
         private readonly KinesisSinkState _state;
 
         readonly int _batchPostingLimit;
@@ -53,6 +55,9 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
             AppDomain.CurrentDomain.ProcessExit += OnAppDomainUnloading;
 
             SetTimer();
+
+            Logger.InfoFormat("Candidate search path is {0}",_candidateSearchPath);
+            Logger.InfoFormat("Log folder is {0}",_logFolder);
         }
 
         void OnAppDomainUnloading(object sender, EventArgs e)
@@ -134,7 +139,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                         string currentFilePath;
 
                         TryReadBookmark(bookmark, out nextLineBeginsAtOffset, out currentFilePath);
-                        SelfLog.WriteLine("Bookmark is currently at offset {0} in '{1}'", nextLineBeginsAtOffset, currentFilePath);
+                        Logger.TraceFormat("Bookmark is currently at offset {0} in '{1}'", nextLineBeginsAtOffset, currentFilePath);
 
                         var fileSet = GetFileSet();
 
@@ -142,6 +147,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                         {
                             nextLineBeginsAtOffset = 0;
                             currentFilePath = fileSet.FirstOrDefault();
+                            Logger.InfoFormat("Current log file is {0}",currentFilePath);
                         }
 
                         if (currentFilePath != null)
@@ -175,14 +181,14 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                                     Records = records
                                 };
 
-                                SelfLog.WriteLine("Writing {0} records to kinesis", count);
+                                Logger.TraceFormat("Writing {0} records to kinesis", count);
                                 PutRecordsResponse response = _state.KinesisClient.PutRecords(request);
 
                                 if (response.FailedRecordCount > 0)
                                 {
                                     foreach (var record in response.Records)
                                     {
-                                        SelfLog.WriteLine("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
+                                        Logger.TraceFormat("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
                                     }
                                     // fire event
                                     OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count), null));
@@ -190,24 +196,25 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                                 else
                                 {
                                     // Advance the bookmark only if we successfully written to Kinesis Stream
-                                    SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
+                                    Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
                                     WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
                                 }
                             }
                             else
                             {
-                                SelfLog.WriteLine("Found no records to process");
+                                Logger.TraceFormat("Found no records to process");
 
                                 // Only advance the bookmark if no other process has the
                                 // current file locked, and its length is as we found it.
 
                                 var bufferedFilesCount = fileSet.Length;
                                 var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.InvariantCultureIgnoreCase);
-                                //SelfLog.WriteLine("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; IsFirstFileUnlocked: {2}", bufferedFilesCount, isProcessingFirstFile, isFirstFileUnlocked);
+                                var isFirstFileUnlocked = IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset);
+                                Logger.TraceFormat("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; IsFirstFileUnlocked: {2}", bufferedFilesCount, isProcessingFirstFile, isFirstFileUnlocked);
 
-                                if (bufferedFilesCount == 2 && isProcessingFirstFile && IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset))
+                                if (bufferedFilesCount == 2 && isProcessingFirstFile && isFirstFileUnlocked)
                                 {
-                                    SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
+                                    Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
                                     WriteBookmark(bookmark, 0, fileSet[1]);
                                 }
 
@@ -216,7 +223,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                                     // Once there's a third file waiting to ship, we do our
                                     // best to move on, though a lock on the current file
                                     // will delay this.
-                                    SelfLog.WriteLine("Deleting '{0}'", fileSet[0]);
+                                    Logger.InfoFormat("Deleting '{0}'", fileSet[0]);
 
                                     File.Delete(fileSet[0]);
                                 }
@@ -229,7 +236,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
             }
             catch (Exception ex)
             {
-                SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, ex);
+                Logger.DebugFormat("Exception while emitting periodic batch from {0}: {1}", this, ex);
                 OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _state.Options.StreamName), ex));
             }
             finally
@@ -257,11 +264,13 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
 
                 if (errorCode == 32)
                 {
-                    SelfLog.WriteLine("Log file {0} is locked by another process, bookmark is not advanced: {1}", file, ex);
+                    Logger.DebugException("Exception while emitting periodic batch", ex);
+//                    SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", file, ex);
                 }
                 else if (errorCode == 33)
                 {
-                    SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", file, ex);
+                    Logger.DebugException(string.Format("Unexpected exception while testing locked status of {0}", file), ex);
+//                SelfLog.WriteLine("Unexpected exception while testing locked status of {0}: {1}", file, ex);
                 }
                 else
                 {
@@ -339,9 +348,12 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
 
         string[] GetFileSet()
         {
-            return Directory.GetFiles(_logFolder, _candidateSearchPath)
+            var fileSet = Directory.GetFiles(_logFolder, _candidateSearchPath)
                 .OrderBy(n => n)
                 .ToArray();
+            var fileSetDesc = string.Join(";", fileSet);
+            Logger.InfoFormat("FileSet contains: {0}", fileSetDesc);
+            return fileSet;
         }
     }
 }
