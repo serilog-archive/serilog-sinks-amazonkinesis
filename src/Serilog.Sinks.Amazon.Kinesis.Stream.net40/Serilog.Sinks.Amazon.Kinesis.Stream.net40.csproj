@@ -77,6 +77,9 @@
     <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\Sinks\HttpLogShipper.cs">
       <Link>Sinks\HttpLogShipper.cs</Link>
     </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\Sinks\HttpLogShipperBase.cs">
+      <Link>Sinks\HttpLogShipperBase.cs</Link>
+    </Compile>
     <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\Sinks\KinesisApi.cs">
       <Link>Sinks\KinesisApi.cs</Link>
     </Compile>

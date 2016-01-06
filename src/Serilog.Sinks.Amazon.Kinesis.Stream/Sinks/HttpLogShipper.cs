@@ -24,107 +24,17 @@ using Serilog.Sinks.Amazon.Kinesis.Stream.Logging;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream
 {
-    class HttpLogShipper : IDisposable
+    class HttpLogShipper : HttpLogShipperBase
     {
         private static readonly ILog Logger = LogProvider.For<HttpLogShipper>();
         private readonly KinesisSinkState _state;
 
-        readonly int _batchPostingLimit;
-        readonly Timer _timer;
-        readonly TimeSpan _period;
-        readonly object _stateLock = new object();
-        volatile bool _unloading;
-        readonly string _bookmarkFilename;
-        readonly string _logFolder;
-        readonly string _candidateSearchPath;
-        public event EventHandler<LogSendErrorEventArgs> LogSendError;
-
-        public HttpLogShipper(KinesisSinkState state)
+        public HttpLogShipper(KinesisSinkState state):base(state)
         {
             _state = state;
-            _period = _state.Options.Period;
-            _batchPostingLimit = _state.Options.BatchPostingLimit;
-            _bookmarkFilename = Path.GetFullPath(_state.Options.BufferBaseFilename + ".bookmark");
-            _logFolder = Path.GetDirectoryName(_bookmarkFilename);
-            _candidateSearchPath = Path.GetFileName(_state.Options.BufferBaseFilename) + "*.json";
-
-            _timer = new Timer(s => OnTick());
-
-            AppDomain.CurrentDomain.DomainUnload += OnAppDomainUnloading;
-            AppDomain.CurrentDomain.ProcessExit += OnAppDomainUnloading;
-
-            SetTimer();
-
-            Logger.InfoFormat("Candidate search path is {0}",_candidateSearchPath);
-            Logger.InfoFormat("Log folder is {0}",_logFolder);
         }
 
-        void OnAppDomainUnloading(object sender, EventArgs e)
-        {
-            CloseAndFlush();
-        }
-
-        void OnLogSendError(LogSendErrorEventArgs e)
-        {
-            var handler = LogSendError;
-            if (handler != null)
-            {
-                handler(this, e);
-            }
-        }
-
-        void CloseAndFlush()
-        {
-            lock (_stateLock)
-            {
-                if (_unloading)
-                    return;
-
-                _unloading = true;
-            }
-
-            AppDomain.CurrentDomain.DomainUnload -= OnAppDomainUnloading;
-            AppDomain.CurrentDomain.ProcessExit -= OnAppDomainUnloading;
-
-            var wh = new ManualResetEvent(false);
-            if (_timer.Dispose(wh))
-                wh.WaitOne();
-
-            OnTick();
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        /// <filterpriority>2</filterpriority>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        /// <summary>
-        /// Free resources held by the sink.
-        /// </summary>
-        /// <param name="disposing">If true, called because the object is being disposed; if false,
-        /// the object is being disposed from the finalizer.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposing) return;
-            CloseAndFlush();
-        }
-
-        void SetTimer()
-        {
-            // Note, called under _stateLock
-
-#if NET40
-           _timer.Change(_period, TimeSpan.FromDays(30));
-#else
-            _timer.Change(_period, Timeout.InfiniteTimeSpan);
-#endif
-        }
-
-        void OnTick()
+        protected override void OnTick()
         {
             try
             {
@@ -249,123 +159,6 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                         SetTimer();
                 }
             }
-        }
-
-        static bool IsUnlockedAtLength(string file, long maxLen)
-        {
-            try
-            {
-                using (var fileStream = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
-                {
-                    return fileStream.Length <= maxLen;
-                }
-            }
-            catch (IOException ex)
-            {
-                var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
-                if (errorCode != 32 && errorCode != 33)
-                {
-                    Logger.TraceException("Unexpected I/O exception while testing locked status of {0}", ex, file);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.TraceException("Unexpected exception while testing locked status of {0}", ex, file);
-            }
-
-            return false;
-        }
-
-        static void WriteBookmark(FileStream bookmark, long nextLineBeginsAtOffset, string currentFile)
-        {
-#if NET40
-            // Important not to dispose this StreamReader as the stream must remain open.
-            var writer = new StreamWriter(bookmark);
-            writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
-            writer.Flush();
-#else
-            using (var writer = new StreamWriter(bookmark))
-            {
-                writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
-            }
-#endif
-        }
-
-        // It would be ideal to chomp whitespace here, but not required.
-        static bool TryReadLine(System.IO.Stream current, ref long nextStart, out string nextLine)
-        {
-            var includesBom = nextStart == 0;
-
-            if (current.Length <= nextStart)
-            {
-                nextLine = null;
-                return false;
-            }
-
-            current.Position = nextStart;
-
-#if NET40
-            // Important not to dispose this StreamReader as the stream must remain open.
-            var reader = new StreamReader(current, Encoding.UTF8, false, 128);
-            nextLine = reader.ReadLine();
-#else
-            using (var reader = new StreamReader(current, Encoding.UTF8, false, 128, true))
-            {
-                nextLine = reader.ReadLine();
-            }
-#endif
-
-            if (nextLine == null)
-                return false;
-
-            nextStart += Encoding.UTF8.GetByteCount(nextLine) + Encoding.UTF8.GetByteCount(Environment.NewLine);
-            if (includesBom)
-                nextStart += 3;
-
-            return true;
-        }
-
-        static void TryReadBookmark(System.IO.Stream bookmark, out long nextLineBeginsAtOffset, out string currentFile)
-        {
-            nextLineBeginsAtOffset = 0;
-            currentFile = null;
-
-            if (bookmark.Length != 0)
-            {
-                string current;
-#if NET40
-                // Important not to dispose this StreamReader as the stream must remain open.
-                var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128);
-                current = reader.ReadLine();
-#else
-                using (var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128, true))
-                {
-                    current = reader.ReadLine();
-                }
-#endif
-
-                if (current != null)
-                {
-                    bookmark.Position = 0;
-                    var parts = current.Split(new[] { ":::" }, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length == 2)
-                    {
-                        nextLineBeginsAtOffset = long.Parse(parts[0]);
-                        currentFile = parts[1];
-                    }
-                }
-
-            }
-        }
-
-        string[] GetFileSet()
-        {
-            var fileSet = Directory.GetFiles(_logFolder, _candidateSearchPath)
-                .OrderBy(n => n)
-                .ToArray();
-            var fileSetDesc = string.Join(";", fileSet);
-            Logger.InfoFormat("FileSet contains: {0}", fileSetDesc);
-            return fileSet;
         }
     }
 }

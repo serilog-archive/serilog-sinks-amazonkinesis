@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <Framework Condition=" '$(Framework)' == '' ">NET45</Framework>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,6 +34,11 @@
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>bin\Release\Serilog.Sinks.Amazon.Kinesis.Stream.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Framework)' == 'NET40'">
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <OutputPath>bin40\$(Configuration)\</OutputPath>
+    <DefineConstants>$(DefineConstants);NET40</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -75,6 +81,7 @@
     </Compile>
     <Compile Include="KinesisLoggerConfigurationExtensions.cs" />
     <Compile Include="Sinks\HttpLogShipper.cs" />
+    <Compile Include="Sinks\HttpLogShipperBase.cs" />
     <Compile Include="Sinks\KinesisSink.cs" />
     <Compile Include="Sinks\KinesisSinkState.cs" />
     <Compile Include="Sinks\KinesisApi.cs" />
@@ -96,4 +103,9 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!--<Target Name="AfterBuild">
+    <Message Text="Enter After Build TargetFrameworkVersion:$(TargetFrameworkVersion) Framework:$(Framework)" Importance="high" />
+    <MSBuild Condition=" '$(Framework)' != 'NET40'" Projects="$(MSBuildProjectFile)" Properties="Framework=NET40" RunEachTargetSeparately="true" />
+    <Message Text="Exiting After Build TargetFrameworkVersion:$(TargetFrameworkVersion) Framework:$(Framework)" Importance="high" />
+  </Target>-->
 </Project>

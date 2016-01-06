@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <Framework Condition=" '$(Framework)' == '' ">NET45</Framework>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,6 +34,12 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Serilog.Sinks.Amazon.Kinesis.xml</DocumentationFile>
     <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Framework)' == 'NET40'">
+    <!-- Set the TargetFrameworkVersion here. This is the variable to tell ms build what .net framework to target.-->
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <OutputPath>bin40\$(Configuration)\</OutputPath>
+    <DefineConstants>$(DefineConstants);NET40</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">

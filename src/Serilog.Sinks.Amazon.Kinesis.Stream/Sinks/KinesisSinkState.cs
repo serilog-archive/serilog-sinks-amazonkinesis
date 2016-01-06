@@ -14,49 +14,20 @@
 
 using System;
 using Amazon.Kinesis;
-using Serilog.Formatting;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream
 {
-    internal class KinesisSinkState
+    internal class KinesisSinkState : KinesisSinkStateBase
     {
-        public static KinesisSinkState Create(KinesisStreamSinkOptions options)
+        internal KinesisSinkState(KinesisStreamSinkOptions options, IAmazonKinesis kinesisClient) : base(options)
         {
             if (options == null) throw new ArgumentNullException("options");
-            var state = new KinesisSinkState(options);
-            return state;
+            if (kinesisClient == null) throw new ArgumentNullException("kinesisClient");
+            KinesisClient = kinesisClient;
+            Options = options;
         }
 
-        private readonly KinesisStreamSinkOptions _options;
-        private readonly IAmazonKinesis _client;
-        private readonly ITextFormatter _formatter;
-        private readonly ITextFormatter _durableFormatter;
-
-        public KinesisStreamSinkOptions Options { get { return _options; } }
-        public IAmazonKinesis KinesisClient { get { return _client; } }
-        public ITextFormatter Formatter { get { return _formatter; } }
-        public ITextFormatter DurableFormatter { get { return _durableFormatter; } }
-
-        private KinesisSinkState(KinesisStreamSinkOptions options)
-        {
-            if (string.IsNullOrWhiteSpace(options.StreamName)) throw new ArgumentException("options.StreamName");
-
-            _client = options.KinesisClient;
-            _options = options;
-
-            _formatter = options.CustomDurableFormatter ?? new CustomJsonFormatter(
-                omitEnclosingObject: false,
-                closingDelimiter: string.Empty,
-                renderMessage: true,
-                formatProvider: options.FormatProvider
-            );
-
-            _durableFormatter = options.CustomDurableFormatter ?? new CustomJsonFormatter(
-                omitEnclosingObject: false,
-                closingDelimiter: Environment.NewLine,
-                renderMessage: true,
-                formatProvider: options.FormatProvider
-            );
-        }
+        public KinesisStreamSinkOptions Options { get; }
+        public IAmazonKinesis KinesisClient { get; }
     }
 }
