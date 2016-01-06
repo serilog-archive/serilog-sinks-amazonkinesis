@@ -41,7 +41,7 @@ function Invoke-Build($majorMinor, $patch, $customLogger, $notouch)
     $project = "serilog-sinks-amazonkinesis"
 
     $solution = "$project.sln"
-    $solution4 = "$project-net40.sln"
+#    $solution4 = "$project-net40.sln"
     $package="$majorMinor.$patch"
 
     Write-Output "Building $project $package"
@@ -55,9 +55,9 @@ function Invoke-Build($majorMinor, $patch, $customLogger, $notouch)
     }
 
     Install-NuGetPackages $solution
-    Install-NuGetPackages $solution4
+ #   Install-NuGetPackages $solution4
 
-    Invoke-MSBuild $solution4 $customLogger
+  #  Invoke-MSBuild $solution4 $customLogger
     Invoke-MSBuild $solution $customLogger
 
     Invoke-NuGetPackSpec "src/Serilog.Sinks.AmazonKinesis.nuspec" $package

@@ -32,23 +32,25 @@ namespace Serilog
         /// </summary>
         /// <param name="loggerConfiguration">The logger configuration.</param>
         /// <param name="options"></param>
+        /// <param name="kinesisClient"></param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration AmazonKinesis(
             this LoggerSinkConfiguration loggerConfiguration,
-            KinesisSinkOptions options)
+            KinesisStreamSinkOptions options,IAmazonKinesis kinesisClient)
         {
             if (loggerConfiguration == null) throw new ArgumentNullException("loggerConfiguration");
             if (options == null) throw new ArgumentNullException("options");
+            if (kinesisClient == null) throw new ArgumentNullException("kinesisClient");
 
             ILogEventSink sink;
             if (options.BufferBaseFilename == null)
             {
-                sink = new KinesisSink(options);
+                sink = new KinesisSink(options, kinesisClient);
             }
             else
             {
-                sink = new DurableKinesisSink(options);
+                sink = new DurableKinesisSink(options, kinesisClient);
             }
 
             return loggerConfiguration.Sink(sink, options.MinimumLogEventLevel ?? LevelAlias.Minimum);
@@ -82,20 +84,19 @@ namespace Serilog
             LogEventLevel? minimumLogEventLevel = null,
             EventHandler<LogSendErrorEventArgs> onLogSendError = null)
         {
-            if (kinesisClient == null) throw new ArgumentNullException("kinesisClient");
             if (streamName == null) throw new ArgumentNullException("streamName");
 
-            var options = new KinesisSinkOptions(kinesisClient: kinesisClient, streamName: streamName, shardCount: shardCount)
+            var options = new KinesisStreamSinkOptions(streamName: streamName, shardCount: shardCount)
             {
                 BufferFileSizeLimitBytes = bufferFileSizeLimitBytes,
                 BufferBaseFilename = bufferBaseFilename,
-                Period = period ?? KinesisSinkOptions.DefaultPeriod,
-                BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptions.DefaultBatchPostingLimit,
+                Period = period ?? KinesisStreamSinkOptions.DefaultPeriod,
+                BatchPostingLimit = batchPostingLimit ?? KinesisStreamSinkOptions.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
                 OnLogSendError = onLogSendError
             };
 
-            return AmazonKinesis(loggerConfiguration, options);
+            return AmazonKinesis(loggerConfiguration, options, kinesisClient);
         }
     }
 }

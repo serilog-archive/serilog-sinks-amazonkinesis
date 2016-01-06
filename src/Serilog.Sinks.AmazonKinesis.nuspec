@@ -28,14 +28,14 @@
     <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.dll" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.pdb" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.xml" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.dll" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.pdb" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.xml" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.dll" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.pdb" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.xml" target="lib\net40" />
     <file src="Serilog.Sinks.Amazon.Kinesis.Stream\bin\Release\Serilog.Sinks.Amazon.Kinesis.Stream.dll" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis.Stream\bin\Release\Serilog.Sinks.Amazon.Kinesis.Stream.pdb" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis.Stream\bin\Release\Serilog.Sinks.Amazon.Kinesis.Stream.xml" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Stream\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Stream.dll" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Stream\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Stream.pdb" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Stream\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Stream.xml" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis.Stream.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Stream.dll" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis.Stream.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Stream.pdb" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis.Stream.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Stream.xml" target="lib\net40" />
   </files>
 </package>
