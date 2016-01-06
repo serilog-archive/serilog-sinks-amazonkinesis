@@ -24,9 +24,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesis.Firehose", "src\Serilog.Sinks.Amazon.Kinesis.Firehose\Serilog.Sinks.Amazon.Kinesis.Firehose.csproj", "{81B149AE-B673-401B-9E7E-F7B56F6B8BED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesis.Firehose-net40", "src\Serilog.Sinks.Amazon.Kinesis.Firehose\Serilog.Sinks.Amazon.Kinesis.Firehose-net40.csproj", "{00297150-F24F-43BF-A681-1A3FC5551880}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesis.Firehose.net40", "src\Serilog.Sinks.Amazon.Kinesis.Firehose.net40\Serilog.Sinks.Amazon.Kinesis.Firehose.net40.csproj", "{00297150-F24F-43BF-A681-1A3FC5551880}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesis.Stream-net40", "src\Serilog.Sinks.Amazon.Kinesis.Stream\Serilog.Sinks.Amazon.Kinesis.Stream-net40.csproj", "{253E61AB-0DCF-4C6D-AC1E-DC6EB5529B10}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesis.Stream.net40", "src\Serilog.Sinks.Amazon.Kinesis.Stream.net40\Serilog.Sinks.Amazon.Kinesis.Stream.net40.csproj", "{253E61AB-0DCF-4C6D-AC1E-DC6EB5529B10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

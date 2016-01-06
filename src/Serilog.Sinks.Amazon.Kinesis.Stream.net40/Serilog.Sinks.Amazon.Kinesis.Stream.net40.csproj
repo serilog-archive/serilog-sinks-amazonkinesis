@@ -51,12 +51,12 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Serilog.1.5.10\lib\net40\Serilog.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Serilog.FullNetFx, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Serilog.1.5.10\lib\net40\Serilog.FullNetFx.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -68,18 +68,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\KinesisLoggerConfigurationExtensions.cs">
+      <Link>KinesisLoggerConfigurationExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\Sinks\DurableKinesisSink.cs">
+      <Link>Sinks\DurableKinesisSink.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\Sinks\HttpLogShipper.cs">
+      <Link>Sinks\HttpLogShipper.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\Sinks\KinesisApi.cs">
+      <Link>Sinks\KinesisApi.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\Sinks\KinesisSink.cs">
+      <Link>Sinks\KinesisSink.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\Sinks\KinesisSinkState.cs">
+      <Link>Sinks\KinesisSinkState.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Stream\Sinks\KinesisStreamSinkOptions.cs">
+      <Link>Sinks\KinesisStreamSinkOptions.cs</Link>
+    </Compile>
     <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
-    <Compile Include="KinesisLoggerConfigurationExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\..\assets\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Sinks\DurableKinesisSink.cs" />
-    <Compile Include="Sinks\HttpLogShipper.cs" />
-    <Compile Include="Sinks\KinesisApi.cs" />
-    <Compile Include="Sinks\KinesisSink.cs" />
-    <Compile Include="Sinks\KinesisStreamSinkOptions.cs" />
-    <Compile Include="Sinks\KinesisSinkState.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Serilog.snk">

@@ -60,14 +60,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Firehose\KinesisFirehoseLoggerConfigurationExtensions.cs">
+      <Link>KinesisFirehoseLoggerConfigurationExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Firehose\Sinks\DurableKinesisFirehoseSink.cs">
+      <Link>Sinks\DurableKinesisFirehoseSink.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Firehose\Sinks\HttpLogShipper.cs">
+      <Link>Sinks\HttpLogShipper.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Firehose\Sinks\KinesisFirehoseSink.cs">
+      <Link>Sinks\KinesisFirehoseSink.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Firehose\Sinks\KinesisFirehoseSinkOptions.cs">
+      <Link>Sinks\KinesisFirehoseSinkOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Firehose\Sinks\KinesisSinkState.cs">
+      <Link>Sinks\KinesisSinkState.cs</Link>
+    </Compile>
     <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
-    <Compile Include="KinesisFirehoseLoggerConfigurationExtensions.cs" />
-    <Compile Include="Sinks\DurableKinesisFirehoseSink.cs" />
-    <Compile Include="Sinks\HttpLogShipper.cs" />
-    <Compile Include="Sinks\KinesisFirehoseSinkOptions.cs" />
-    <Compile Include="Sinks\KinesisFirehoseSink.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sinks\KinesisSinkState.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -80,6 +92,7 @@
       <Name>Serilog.Sinks.Amazon.Kinesis</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
