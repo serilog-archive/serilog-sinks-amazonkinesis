@@ -8,7 +8,14 @@ namespace Serilog.Sinks.Amazon.Kinesis
     /// 
     /// </summary>
     public abstract class KinesisSinkOptionsBase {
+        protected KinesisSinkOptionsBase(string streamName)
+        {
+            if (streamName == null) throw new ArgumentNullException("streamName");
 
+            StreamName = streamName;
+            Period = DefaultPeriod;
+            BatchPostingLimit = DefaultBatchPostingLimit;
+        }
 
         /// <summary>
         /// Optional path to directory that can be used as a log shipping buffer for increasing the reliabilty of the log forwarding.

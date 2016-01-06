@@ -14,49 +14,20 @@
 
 using System;
 using Amazon.KinesisFirehose;
-using Serilog.Formatting;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 {
-    internal class KinesisSinkState
+    internal class KinesisSinkState : KinesisSinkStateBase
     {
-        public static KinesisSinkState Create(KinesisFirehoseSinkOptions options)
+        internal KinesisSinkState(KinesisFirehoseSinkOptions options, IAmazonKinesisFirehose kinesisFirehoseClient) : base(options)
         {
             if (options == null) throw new ArgumentNullException("options");
-            var state = new KinesisSinkState(options);
-            return state;
+            if (kinesisFirehoseClient == null) throw new ArgumentNullException("kinesisFirehoseClient");
+            KinesisFirehoseClient = kinesisFirehoseClient;
+            Options = options;
         }
 
-        private readonly KinesisFirehoseSinkOptions _options;
-        private readonly IAmazonKinesisFirehose _client;
-        private readonly ITextFormatter _formatter;
-        private readonly ITextFormatter _durableFormatter;
-
-        public KinesisFirehoseSinkOptions Options { get { return _options; } }
-        public IAmazonKinesisFirehose KinesisFirehoseClient { get { return _client; } }
-        public ITextFormatter Formatter { get { return _formatter; } }
-        public ITextFormatter DurableFormatter { get { return _durableFormatter; } }
-
-        private KinesisSinkState(KinesisFirehoseSinkOptions options)
-        {
-            if (string.IsNullOrWhiteSpace(options.StreamName)) throw new ArgumentException("options.StreamName");
-
-            _client = options.KinesisFirehoseClient;
-            _options = options;
-
-            _formatter = options.CustomDurableFormatter ?? new CustomJsonFormatter(
-                omitEnclosingObject: false,
-                closingDelimiter: string.Empty,
-                renderMessage: true,
-                formatProvider: options.FormatProvider
-            );
-
-            _durableFormatter = options.CustomDurableFormatter ?? new CustomJsonFormatter(
-                omitEnclosingObject: false,
-                closingDelimiter: Environment.NewLine,
-                renderMessage: true,
-                formatProvider: options.FormatProvider
-            );
-        }
+        public KinesisFirehoseSinkOptions Options { get; }
+        public IAmazonKinesisFirehose KinesisFirehoseClient { get; }
     }
 }

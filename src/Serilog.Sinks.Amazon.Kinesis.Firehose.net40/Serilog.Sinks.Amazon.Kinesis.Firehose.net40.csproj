@@ -69,6 +69,9 @@
     <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Firehose\Sinks\HttpLogShipper.cs">
       <Link>Sinks\HttpLogShipper.cs</Link>
     </Compile>
+    <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Firehose\Sinks\HttpLogShipperBase.cs">
+      <Link>Sinks\HttpLogShipperBase.cs</Link>
+    </Compile>
     <Compile Include="..\Serilog.Sinks.Amazon.Kinesis.Firehose\Sinks\KinesisFirehoseSink.cs">
       <Link>Sinks\KinesisFirehoseSink.cs</Link>
     </Compile>

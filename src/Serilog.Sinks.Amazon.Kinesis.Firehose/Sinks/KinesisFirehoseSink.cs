@@ -15,6 +15,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Amazon.KinesisFirehose;
 using Amazon.KinesisFirehose.Model;
 using Serilog.Events;
 using Serilog.Sinks.PeriodicBatching;
@@ -32,11 +33,12 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         /// <summary>
         /// Construct a sink posting to the specified database.
         /// </summary>
+        /// <param name="kinesisFirehoseClient">The Amazon Kinesis Firehose client.</param>
         /// <param name="options">Options for configuring how the sink behaves, may NOT be null.</param>
-        public KinesisFirehoseSink(KinesisFirehoseSinkOptions options) :
+        public KinesisFirehoseSink(KinesisFirehoseSinkOptions options, IAmazonKinesisFirehose kinesisFirehoseClient) :
             base(options.BatchPostingLimit, options.Period)
         {
-            _state = KinesisSinkState.Create(options);
+            _state = new KinesisSinkState(options, kinesisFirehoseClient);
 
             _minimumAcceptedLevel = _state.Options.MinimumLogEventLevel;
         }

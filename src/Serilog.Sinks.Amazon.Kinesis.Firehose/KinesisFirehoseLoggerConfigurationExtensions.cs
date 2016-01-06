@@ -32,11 +32,13 @@ namespace Serilog
         /// </summary>
         /// <param name="loggerConfiguration">The logger configuration.</param>
         /// <param name="options"></param>
+        /// <param name="kinesisFirehoseClient"></param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration AmazonKinesisFirehose(
             this LoggerSinkConfiguration loggerConfiguration,
-            KinesisFirehoseSinkOptions options)
+            KinesisFirehoseSinkOptions options,
+            IAmazonKinesisFirehose kinesisFirehoseClient)
         {
             if (loggerConfiguration == null) throw new ArgumentNullException("loggerConfiguration");
             if (options == null) throw new ArgumentNullException("options");
@@ -44,11 +46,11 @@ namespace Serilog
             ILogEventSink sink;
             if (options.BufferBaseFilename == null)
             {
-                sink = new KinesisFirehoseSink(options);
+                sink = new KinesisFirehoseSink(options, kinesisFirehoseClient);
             }
             else
             {
-                sink = new DurableKinesisFirehoseSink(options);
+                sink = new DurableKinesisFirehoseSink(options, kinesisFirehoseClient);
             }
 
             return loggerConfiguration.Sink(sink, options.MinimumLogEventLevel ?? LevelAlias.Minimum);
@@ -83,7 +85,7 @@ namespace Serilog
             if (kinesisFirehoseClient == null) throw new ArgumentNullException("kinesisFirehoseClient");
             if (streamName == null) throw new ArgumentNullException("streamName");
 
-            var options = new KinesisFirehoseSinkOptions(kinesisFirehoseClient: kinesisFirehoseClient, streamName: streamName)
+            var options = new KinesisFirehoseSinkOptions(streamName)
             {
                 BufferFileSizeLimitBytes = bufferFileSizeLimitBytes,
                 BufferBaseFilename = bufferBaseFilename,
@@ -93,7 +95,7 @@ namespace Serilog
                 OnLogSendError = onLogSendError
             };
 
-            return AmazonKinesisFirehose(loggerConfiguration, options);
+            return AmazonKinesisFirehose(loggerConfiguration, options, kinesisFirehoseClient);
         }
     }
 }

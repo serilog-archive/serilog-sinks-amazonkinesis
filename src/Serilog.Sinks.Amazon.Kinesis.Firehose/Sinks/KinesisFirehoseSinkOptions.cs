@@ -12,52 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using Amazon.KinesisFirehose;
-using Serilog.Events;
-using Serilog.Formatting;
-using Serilog.Sinks.Amazon.Kinesis;
-
 namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 {
     /// <summary>
-    /// Provides KinesisFirehoseSink with configurable options
+    ///     Provides KinesisFirehoseSink with configurable options
     /// </summary>
     public class KinesisFirehoseSinkOptions : KinesisSinkOptionsBase
     {
         /// <summary>
-        /// The Amazon Kinesis client.
+        ///     Configures the Amazon Kinesis sink.
         /// </summary>
-        public IAmazonKinesisFirehose KinesisFirehoseClient { get; set; }
-
-        /// <summary>
-        /// Will be appended to buffer base filenames.
-        /// </summary>
-        public override string BufferBaseFilenameAppend { get { return ".firehose"; } }
-
-        /// <summary>
-        /// Configures the Amazon Kinesis sink defaults.
-        /// </summary>
-        protected KinesisFirehoseSinkOptions()
-        {
-            Period = DefaultPeriod;
-            BatchPostingLimit = DefaultBatchPostingLimit;
-        }
-
-        /// <summary>
-        /// Configures the Amazon Kinesis sink.
-        /// </summary>
-        /// <param name="kinesisFirehoseClient">The Amazon Kinesis Firehose client.</param>
         /// <param name="streamName">The name of the Kinesis stream.</param>
-        /// <param name="shardCount"></param>
-        public KinesisFirehoseSinkOptions(IAmazonKinesisFirehose kinesisFirehoseClient, string streamName, int? shardCount = null)
-            : this()
-        {
-            if (kinesisFirehoseClient == null) throw new ArgumentNullException("kinesisFirehoseClient");
-            if (streamName == null) throw new ArgumentNullException("streamName");
+        public KinesisFirehoseSinkOptions(string streamName) : base(streamName) {}
 
-            KinesisFirehoseClient = kinesisFirehoseClient;
-            StreamName = streamName;
+        /// <summary>
+        ///     Will be appended to buffer base filenames.
+        /// </summary>
+        public override string BufferBaseFilenameAppend
+        {
+            get { return ".firehose"; }
         }
     }
 }

@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Serilog.Sinks.AmazonKinesisFirehose-net40")]
+[assembly: AssemblyTitle("Serilog.Sinks.Amazon.Kinesis.Firehose")]
 [assembly: AssemblyDescription("Serilog sink for Amazon Kinesis Firehose")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("Serilog.Sinks.AmazonKinesisFirehose-net40")]
+[assembly: AssemblyProduct("Serilog.Sinks.Amazon.Kinesis.Firehose")]
 [assembly: AssemblyCopyright("Copyright © Serilog Contributors 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
