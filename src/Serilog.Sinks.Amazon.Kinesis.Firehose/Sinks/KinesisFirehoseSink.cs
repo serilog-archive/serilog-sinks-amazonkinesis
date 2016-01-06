@@ -26,7 +26,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
     /// </summary>
     public class KinesisFirehoseSink : PeriodicBatchingSink
     {
-        readonly KinesisFirehoseSinkState _state;
+        readonly KinesisSinkState _state;
         readonly LogEventLevel? _minimumAcceptedLevel;
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         public KinesisFirehoseSink(KinesisFirehoseSinkOptions options) :
             base(options.BatchPostingLimit, options.Period)
         {
-            _state = KinesisFirehoseSinkState.Create(options);
+            _state = KinesisSinkState.Create(options);
 
             _minimumAcceptedLevel = _state.Options.MinimumLogEventLevel;
         }

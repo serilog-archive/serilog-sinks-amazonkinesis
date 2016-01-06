@@ -34,7 +34,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
         /// Construct a sink posting to the specified database.
         /// </summary>
         /// <param name="options">Options for configuring how the sink behaves, may NOT be null.</param>
-        public KinesisSink(KinesisSinkOptions options) : 
+        public KinesisSink(KinesisStreamSinkOptions options) : 
             base(options.BatchPostingLimit, options.Period)
         {
             _state = KinesisSinkState.Create(options);

@@ -7,7 +7,7 @@
     <ProjectGuid>{8164BDE4-48FE-4A81-B33E-FEE348904BB8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Serilog</RootNamespace>
+    <RootNamespace>Serilog.Sinks.Amazon.Kinesis.Stream</RootNamespace>
     <AssemblyName>Serilog.Sinks.Amazon.Kinesis.Stream</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -74,12 +74,12 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="KinesisLoggerConfigurationExtensions.cs" />
-    <Compile Include="Sinks\AmazonKinesis\HttpLogShipper.cs" />
-    <Compile Include="Sinks\AmazonKinesis\KinesisSink.cs" />
-    <Compile Include="Sinks\AmazonKinesis\KinesisSinkOptions.cs" />
-    <Compile Include="Sinks\AmazonKinesis\KinesisSinkState.cs" />
-    <Compile Include="Sinks\AmazonKinesis\KinesisApi.cs" />
-    <Compile Include="Sinks\AmazonKinesis\DurableKinesisSink.cs" />
+    <Compile Include="Sinks\HttpLogShipper.cs" />
+    <Compile Include="Sinks\KinesisSink.cs" />
+    <Compile Include="Sinks\KinesisSinkState.cs" />
+    <Compile Include="Sinks\KinesisApi.cs" />
+    <Compile Include="Sinks\DurableKinesisSink.cs" />
+    <Compile Include="Sinks\KinesisStreamSinkOptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Serilog.snk">

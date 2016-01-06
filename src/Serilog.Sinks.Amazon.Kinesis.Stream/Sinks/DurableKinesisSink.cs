@@ -24,7 +24,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
         readonly HttpLogShipper _shipper;
         readonly RollingFileSink _sink;
 
-        public DurableKinesisSink(KinesisSinkOptions options)
+        public DurableKinesisSink(KinesisStreamSinkOptions options)
         {
             var state = KinesisSinkState.Create(options);
 

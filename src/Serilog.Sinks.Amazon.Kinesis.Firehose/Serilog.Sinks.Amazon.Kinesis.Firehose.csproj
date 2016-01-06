@@ -68,7 +68,7 @@
     <Compile Include="Sinks\DurableKinesisFirehoseSink.cs" />
     <Compile Include="Sinks\HttpLogShipper.cs" />
     <Compile Include="Sinks\KinesisFirehoseSinkOptions.cs" />
-    <Compile Include="Sinks\KinesisFirehoseSinkState.cs" />
+    <Compile Include="Sinks\KinesisSinkState.cs" />
     <Compile Include="Sinks\KinesisFirehoseSink.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

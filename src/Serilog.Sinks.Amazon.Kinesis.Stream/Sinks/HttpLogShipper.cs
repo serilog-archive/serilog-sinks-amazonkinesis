@@ -14,14 +14,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using Amazon.Kinesis.Model;
-using Serilog.Debugging;
 using Serilog.Sinks.Amazon.Kinesis.Stream.Logging;
-using IO = System.IO;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream
 {
@@ -45,9 +44,9 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
             _state = state;
             _period = _state.Options.Period;
             _batchPostingLimit = _state.Options.BatchPostingLimit;
-            _bookmarkFilename = IO.Path.GetFullPath(_state.Options.BufferBaseFilename + ".bookmark");
-            _logFolder = IO.Path.GetDirectoryName(_bookmarkFilename);
-            _candidateSearchPath = IO.Path.GetFileName(_state.Options.BufferBaseFilename) + "*.json";
+            _bookmarkFilename = Path.GetFullPath(_state.Options.BufferBaseFilename + ".bookmark");
+            _logFolder = Path.GetDirectoryName(_bookmarkFilename);
+            _candidateSearchPath = Path.GetFileName(_state.Options.BufferBaseFilename) + "*.json";
 
             _timer = new Timer(s => OnTick());
 
@@ -118,7 +117,11 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
         {
             // Note, called under _stateLock
 
+#if NET40
+           _timer.Change(_period, TimeSpan.FromDays(30));
+#else
             _timer.Change(_period, Timeout.InfiniteTimeSpan);
+#endif
         }
 
         void OnTick()
@@ -132,7 +135,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                     // Locking the bookmark ensures that though there may be multiple instances of this
                     // class running, only one will ship logs at a time.
 
-                    using (var bookmark = IO.File.Open(_bookmarkFilename, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read))
+                    using (var bookmark = File.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                     {
                         long startingOffset;
                         long nextLineBeginsAtOffset;
@@ -143,7 +146,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
 
                         var fileSet = GetFileSet();
 
-                        if (currentFilePath == null || !IO.File.Exists(currentFilePath))
+                        if (currentFilePath == null || !File.Exists(currentFilePath))
                         {
                             nextLineBeginsAtOffset = 0;
                             currentFilePath = fileSet.FirstOrDefault();
@@ -155,7 +158,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                             count = 0;
 
                             var records = new List<PutRecordsRequestEntry>();
-                            using (var current = IO.File.Open(currentFilePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.ReadWrite))
+                            using (var current = File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 startingOffset = current.Position = nextLineBeginsAtOffset;
 
@@ -167,7 +170,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                                     var record = new PutRecordsRequestEntry
                                     {
                                         PartitionKey = Guid.NewGuid().ToString(),
-                                        Data = new IO.MemoryStream(bytes)
+                                        Data = new MemoryStream(bytes)
                                     };
                                     records.Add(record);
                                 }
@@ -225,7 +228,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                                     // will delay this.
                                     Logger.InfoFormat("Deleting '{0}'", fileSet[0]);
 
-                                    IO.File.Delete(fileSet[0]);
+                                    File.Delete(fileSet[0]);
                                 }
                             }
                         }
@@ -235,7 +238,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
             }
             catch (Exception ex)
             {
-                Logger.DebugFormat("Exception while emitting periodic batch from {0}: {1}", this, ex);
+                Logger.DebugException("Exception while emitting periodic batch", ex);
                 OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _state.Options.StreamName),ex));
             }
             finally
@@ -252,39 +255,44 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
         {
             try
             {
-                using (var fileStream = IO.File.Open(file, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read))
+                using (var fileStream = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                 {
                     return fileStream.Length <= maxLen;
                 }
             }
-            catch (IO.IOException ex)
+            catch (IOException ex)
             {
                 var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
                 if (errorCode != 32 && errorCode != 33)
                 {
-                    Logger.DebugException("Exception while emitting periodic batch", ex);
-//                    SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", file, ex);
+                    Logger.TraceException("Unexpected I/O exception while testing locked status of {0}", ex, file);
                 }
             }
             catch (Exception ex)
             {
-                Logger.DebugException(string.Format("Unexpected exception while testing locked status of {0}", file), ex);
-//                SelfLog.WriteLine("Unexpected exception while testing locked status of {0}: {1}", file, ex);
+                Logger.TraceException("Unexpected exception while testing locked status of {0}", ex, file);
             }
 
             return false;
         }
 
-        static void WriteBookmark(IO.FileStream bookmark, long nextLineBeginsAtOffset, string currentFile)
+        static void WriteBookmark(FileStream bookmark, long nextLineBeginsAtOffset, string currentFile)
         {
-            using (var writer = new IO.StreamWriter(bookmark))
+#if NET40
+            // Important not to dispose this StreamReader as the stream must remain open.
+            var writer = new StreamWriter(bookmark);
+            writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
+            writer.Flush();
+#else
+            using (var writer = new StreamWriter(bookmark))
             {
                 writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
             }
+#endif
         }
 
         // It would be ideal to chomp whitespace here, but not required.
-        static bool TryReadLine(IO.Stream current, ref long nextStart, out string nextLine)
+        static bool TryReadLine(System.IO.Stream current, ref long nextStart, out string nextLine)
         {
             var includesBom = nextStart == 0;
 
@@ -296,10 +304,16 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
 
             current.Position = nextStart;
 
-            using (var reader = new IO.StreamReader(current, Encoding.UTF8, false, 128, true))
+#if NET40
+            // Important not to dispose this StreamReader as the stream must remain open.
+            var reader = new StreamReader(current, Encoding.UTF8, false, 128);
+            nextLine = reader.ReadLine();
+#else
+            using (var reader = new StreamReader(current, Encoding.UTF8, false, 128, true))
             {
                 nextLine = reader.ReadLine();
             }
+#endif
 
             if (nextLine == null)
                 return false;
@@ -311,7 +325,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
             return true;
         }
 
-        static void TryReadBookmark(IO.Stream bookmark, out long nextLineBeginsAtOffset, out string currentFile)
+        static void TryReadBookmark(System.IO.Stream bookmark, out long nextLineBeginsAtOffset, out string currentFile)
         {
             nextLineBeginsAtOffset = 0;
             currentFile = null;
@@ -319,10 +333,16 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
             if (bookmark.Length != 0)
             {
                 string current;
-                using (var reader = new IO.StreamReader(bookmark, Encoding.UTF8, false, 128, true))
+#if NET40
+                // Important not to dispose this StreamReader as the stream must remain open.
+                var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128);
+                current = reader.ReadLine();
+#else
+                using (var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128, true))
                 {
                     current = reader.ReadLine();
                 }
+#endif
 
                 if (current != null)
                 {
@@ -340,7 +360,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
 
         string[] GetFileSet()
         {
-            var fileSet = IO.Directory.GetFiles(_logFolder, _candidateSearchPath)
+            var fileSet = Directory.GetFiles(_logFolder, _candidateSearchPath)
                 .OrderBy(n => n)
                 .ToArray();
             var fileSetDesc = string.Join(";", fileSet);

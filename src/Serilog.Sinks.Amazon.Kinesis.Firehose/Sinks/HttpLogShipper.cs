@@ -20,7 +20,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using Amazon.KinesisFirehose.Model;
-using Serilog.Debugging;
 using Serilog.Sinks.Amazon.Kinesis.Firehose.Logging;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Firehose
@@ -28,7 +27,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
     class HttpLogShipper : IDisposable
     {
         private static readonly ILog Logger = LogProvider.For<HttpLogShipper>();
-        private readonly KinesisFirehoseSinkState _state;
+        private readonly KinesisSinkState _state;
 
         readonly int _batchPostingLimit;
         readonly Timer _timer;
@@ -40,7 +39,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         readonly string _candidateSearchPath;
         public event EventHandler<LogSendErrorEventArgs> LogSendError;
 
-        public HttpLogShipper(KinesisFirehoseSinkState state)
+        public HttpLogShipper(KinesisSinkState state)
         {
             _state = state;
             _period = _state.Options.Period;
@@ -117,7 +116,11 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         {
             // Note, called under _stateLock
 
+#if NET40
+           _timer.Change(_period, TimeSpan.FromDays(30));
+#else
             _timer.Change(_period, Timeout.InfiniteTimeSpan);
+#endif
         }
 
         void OnTick()
@@ -233,7 +236,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
             }
             catch (Exception ex)
             {
-                Logger.DebugFormat("Exception while emitting periodic batch from {0}: {1}", this, ex);
+                Logger.DebugException("Exception while emitting periodic batch", ex);
                 OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _state.Options.StreamName), ex));
             }
             finally
@@ -260,14 +263,12 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
                 var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
                 if (errorCode != 32 && errorCode != 33)
                 {
-                    Logger.DebugException("Exception while emitting periodic batch", ex);
-//                    SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", file, ex);
+                    Logger.TraceException("Unexpected I/O exception while testing locked status of {0}", ex, file);
                 }
             }
             catch (Exception ex)
             {
-                Logger.DebugException(string.Format("Unexpected exception while testing locked status of {0}", file), ex);
-//                SelfLog.WriteLine("Unexpected exception while testing locked status of {0}: {1}", file, ex);
+                Logger.TraceException("Unexpected exception while testing locked status of {0}", ex, file);
             }
 
             return false;
@@ -275,10 +276,17 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 
         static void WriteBookmark(FileStream bookmark, long nextLineBeginsAtOffset, string currentFile)
         {
+#if NET40
+            // Important not to dispose this StreamReader as the stream must remain open.
+            var writer = new StreamWriter(bookmark);
+            writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
+            writer.Flush();
+#else
             using (var writer = new StreamWriter(bookmark))
             {
                 writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
             }
+#endif
         }
 
         // It would be ideal to chomp whitespace here, but not required.
@@ -294,10 +302,16 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 
             current.Position = nextStart;
 
+#if NET40
+            // Important not to dispose this StreamReader as the stream must remain open.
+            var reader = new StreamReader(current, Encoding.UTF8, false, 128);
+            nextLine = reader.ReadLine();
+#else
             using (var reader = new StreamReader(current, Encoding.UTF8, false, 128, true))
             {
                 nextLine = reader.ReadLine();
             }
+#endif
 
             if (nextLine == null)
                 return false;
@@ -317,10 +331,16 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
             if (bookmark.Length != 0)
             {
                 string current;
+#if NET40
+                // Important not to dispose this StreamReader as the stream must remain open.
+                var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128);
+                current = reader.ReadLine();
+#else
                 using (var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128, true))
                 {
                     current = reader.ReadLine();
                 }
+#endif
 
                 if (current != null)
                 {

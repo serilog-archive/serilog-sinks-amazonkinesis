@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomJsonFormatter.cs" />
+    <Compile Include="KinesisSinkOptionsBase.cs" />
     <Compile Include="LogSendErrorEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

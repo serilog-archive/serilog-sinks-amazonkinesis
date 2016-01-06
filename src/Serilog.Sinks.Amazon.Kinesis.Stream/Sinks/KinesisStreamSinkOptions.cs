@@ -13,32 +13,34 @@
 // limitations under the License.
 
 using System;
-using Amazon.KinesisFirehose;
+using Amazon.Kinesis;
 using Serilog.Events;
 using Serilog.Formatting;
-using Serilog.Sinks.Amazon.Kinesis;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Firehose
+namespace Serilog.Sinks.Amazon.Kinesis.Stream
 {
     /// <summary>
-    /// Provides KinesisFirehoseSink with configurable options
+    /// Provides KinesisSink with configurable options
     /// </summary>
-    public class KinesisFirehoseSinkOptions : KinesisSinkOptionsBase
+    public class KinesisStreamSinkOptions : KinesisSinkOptionsBase
     {
+        /// <summary>
+        /// The number of shards for this stream.
+        /// A stream is composed of multiple shards, each of which provides a fixed unit of capacity. 
+        /// The total capacity of the stream is the sum of the capacities of its shards. 
+        /// Each shard corresponds to 1 MB/s of write capacity and 2 MB/s of read capacity.  
+        /// </summary>
+        public int ShardCount { get; set; }
+
         /// <summary>
         /// The Amazon Kinesis client.
         /// </summary>
-        public IAmazonKinesisFirehose KinesisFirehoseClient { get; set; }
-
-        /// <summary>
-        /// Will be appended to buffer base filenames.
-        /// </summary>
-        public override string BufferBaseFilenameAppend { get { return ".firehose"; } }
+        public IAmazonKinesis KinesisClient { get; set; }
 
         /// <summary>
         /// Configures the Amazon Kinesis sink defaults.
         /// </summary>
-        protected KinesisFirehoseSinkOptions()
+        protected KinesisStreamSinkOptions()
         {
             Period = DefaultPeriod;
             BatchPostingLimit = DefaultBatchPostingLimit;
@@ -47,17 +49,23 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         /// <summary>
         /// Configures the Amazon Kinesis sink.
         /// </summary>
-        /// <param name="kinesisFirehoseClient">The Amazon Kinesis Firehose client.</param>
+        /// <param name="kinesisClient">The Amazon Kinesis client.</param>
         /// <param name="streamName">The name of the Kinesis stream.</param>
         /// <param name="shardCount"></param>
-        public KinesisFirehoseSinkOptions(IAmazonKinesisFirehose kinesisFirehoseClient, string streamName, int? shardCount = null)
+        public KinesisStreamSinkOptions(IAmazonKinesis kinesisClient, string streamName, int? shardCount = null) 
             : this()
         {
-            if (kinesisFirehoseClient == null) throw new ArgumentNullException("kinesisFirehoseClient");
+            if (kinesisClient == null) throw new ArgumentNullException("kinesisClient");
             if (streamName == null) throw new ArgumentNullException("streamName");
 
-            KinesisFirehoseClient = kinesisFirehoseClient;
+            KinesisClient = kinesisClient;
             StreamName = streamName;
+            ShardCount = shardCount ?? 1;
         }
+
+        /// <summary>
+        /// Will be appended to buffer base filenames.
+        /// </summary>
+        public override string BufferBaseFilenameAppend { get { return ".stream"; } }
     }
 }

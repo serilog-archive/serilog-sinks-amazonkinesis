@@ -26,7 +26,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 
         public DurableKinesisFirehoseSink(KinesisFirehoseSinkOptions options)
         {
-            var state = KinesisFirehoseSinkState.Create(options);
+            var state = KinesisSinkState.Create(options);
 
             if (string.IsNullOrWhiteSpace(options.BufferBaseFilename))
             {

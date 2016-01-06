@@ -18,12 +18,12 @@ using Serilog.Formatting;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 {
-    internal class KinesisFirehoseSinkState
+    internal class KinesisSinkState
     {
-        public static KinesisFirehoseSinkState Create(KinesisFirehoseSinkOptions options)
+        public static KinesisSinkState Create(KinesisFirehoseSinkOptions options)
         {
             if (options == null) throw new ArgumentNullException("options");
-            var state = new KinesisFirehoseSinkState(options);
+            var state = new KinesisSinkState(options);
             return state;
         }
 
@@ -37,7 +37,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         public ITextFormatter Formatter { get { return _formatter; } }
         public ITextFormatter DurableFormatter { get { return _durableFormatter; } }
 
-        private KinesisFirehoseSinkState(KinesisFirehoseSinkOptions options)
+        private KinesisSinkState(KinesisFirehoseSinkOptions options)
         {
             if (string.IsNullOrWhiteSpace(options.StreamName)) throw new ArgumentException("options.StreamName");
 

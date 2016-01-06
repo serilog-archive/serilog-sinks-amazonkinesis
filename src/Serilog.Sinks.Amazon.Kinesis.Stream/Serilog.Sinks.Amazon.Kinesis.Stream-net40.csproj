@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8164BDE4-48FE-4A81-B33E-FEE348904BB8}</ProjectGuid>
+    <ProjectGuid>{253E61AB-0DCF-4C6D-AC1E-DC6EB5529B10}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Serilog</RootNamespace>
+    <RootNamespace>Serilog.Sinks.Amazon.Kinesis.Stream</RootNamespace>
     <AssemblyName>Serilog.Sinks.Amazon.Kinesis.Stream</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin40\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;NET40</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin40\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NET40</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -69,17 +69,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
+    <Compile Include="KinesisLoggerConfigurationExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\..\assets\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="KinesisLoggerConfigurationExtensions.cs" />
-    <Compile Include="Sinks\AmazonKinesis\HttpLogShipper-net40.cs" />
-    <Compile Include="Sinks\AmazonKinesis\KinesisSink.cs" />
-    <Compile Include="Sinks\AmazonKinesis\KinesisSinkOptions.cs" />
-    <Compile Include="Sinks\AmazonKinesis\KinesisSinkState.cs" />
-    <Compile Include="Sinks\AmazonKinesis\KinesisApi.cs" />
-    <Compile Include="Sinks\AmazonKinesis\DurableKinesisSink.cs" />
+    <Compile Include="Sinks\DurableKinesisSink.cs" />
+    <Compile Include="Sinks\HttpLogShipper.cs" />
+    <Compile Include="Sinks\KinesisApi.cs" />
+    <Compile Include="Sinks\KinesisSink.cs" />
+    <Compile Include="Sinks\KinesisStreamSinkOptions.cs" />
+    <Compile Include="Sinks\KinesisSinkState.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Serilog.snk">
@@ -88,7 +88,6 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Serilog.Sinks.Amazon.Kinesis.Stream.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Serilog.Sinks.Amazon.Kinesis\Serilog.Sinks.Amazon.Kinesis.csproj">
@@ -96,5 +95,6 @@
       <Name>Serilog.Sinks.Amazon.Kinesis</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
