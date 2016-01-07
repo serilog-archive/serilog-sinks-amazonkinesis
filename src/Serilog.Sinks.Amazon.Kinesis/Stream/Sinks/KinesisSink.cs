@@ -21,7 +21,7 @@ using Amazon.Kinesis.Model;
 using Serilog.Events;
 using Serilog.Sinks.PeriodicBatching;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Stream
+namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 {
     /// <summary>
     /// Writes log events as documents to a Amazon Kinesis.

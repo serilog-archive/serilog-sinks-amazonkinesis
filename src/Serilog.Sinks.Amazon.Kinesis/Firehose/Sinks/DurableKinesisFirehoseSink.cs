@@ -18,7 +18,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.RollingFile;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Firehose
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
 {
     class DurableKinesisFirehoseSink : ILogEventSink, IDisposable
     {

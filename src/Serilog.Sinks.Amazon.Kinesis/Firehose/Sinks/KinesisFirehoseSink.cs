@@ -20,7 +20,7 @@ using Amazon.KinesisFirehose.Model;
 using Serilog.Events;
 using Serilog.Sinks.PeriodicBatching;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Firehose
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
 {
     /// <summary>
     /// Writes log events as documents to a Amazon KinesisFirehose.

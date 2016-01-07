@@ -12,152 +12,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using Amazon.KinesisFirehose;
 using Amazon.KinesisFirehose.Model;
 using Serilog.Sinks.Amazon.Kinesis.Logging;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Firehose
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
 {
-    class HttpLogShipper : HttpLogShipperBase
+    internal class HttpLogShipper : HttpLogShipperBase<Record, PutRecordBatchResponse>
     {
-        private static readonly ILog Logger = LogProvider.For<HttpLogShipper>();
-        private readonly KinesisSinkState _state;
-
-
+        readonly IAmazonKinesisFirehose _kinesisFirehoseClient;
 
         public HttpLogShipper(KinesisSinkState state) : base(state)
         {
-            _state = state;
+            _kinesisFirehoseClient = state.KinesisFirehoseClient;
         }
 
-        protected override void OnTick()
+        protected override Record PrepareRecord(byte[] bytes)
         {
-            try
+            return new Record
             {
-                var count = 0;
+                Data = new MemoryStream(bytes)
+            };
+        }
 
-                do
-                {
-                    // Locking the bookmark ensures that though there may be multiple instances of this
-                    // class running, only one will ship logs at a time.
-
-                    using (var bookmark = File.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
-                    {
-                        long startingOffset;
-                        long nextLineBeginsAtOffset;
-                        string currentFilePath;
-
-                        TryReadBookmark(bookmark, out nextLineBeginsAtOffset, out currentFilePath);
-                        Logger.TraceFormat("Bookmark is currently at offset {0} in '{1}'", nextLineBeginsAtOffset, currentFilePath);
-
-                        var fileSet = GetFileSet();
-
-                        if (currentFilePath == null || !File.Exists(currentFilePath))
-                        {
-                            nextLineBeginsAtOffset = 0;
-                            currentFilePath = fileSet.FirstOrDefault();
-                            Logger.InfoFormat("Current log file is {0}",currentFilePath);
-                        }
-
-                        if (currentFilePath != null)
-                        {
-                            count = 0;
-
-                            var records = new List<Record>();
-                            using (var current = File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            {
-                                startingOffset = current.Position = nextLineBeginsAtOffset;
-
-                                string nextLine;
-                                while (count < _batchPostingLimit && TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
-                                {
-                                    ++count;
-                                    var bytes = Encoding.UTF8.GetBytes(nextLine);
-                                    var record = new Record
-                                    {
-                                        Data = new MemoryStream(bytes)
-                                    };
-                                    records.Add(record);
-                                }
-                            }
-
-                            if (count > 0)
-                            {
-                                var request = new PutRecordBatchRequest
-                                {
-                                    DeliveryStreamName = _streamName,
-                                    Records = records
-                                };
-
-                                Logger.TraceFormat("Writing {0} records to firehose", count);
-                                PutRecordBatchResponse response = _state.KinesisFirehoseClient.PutRecordBatch(request);
-
-                                if (response.FailedPutCount > 0)
-                                {
-                                    foreach (var record in response.RequestResponses)
-                                    {
-                                        Logger.TraceFormat("Firehose failed to index record in stream '{0}'. {1} {2} ", _streamName, record.ErrorCode, record.ErrorMessage);
-                                    }
-                                    // fire event
-                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _streamName, response.FailedPutCount, count), null));
-                                }
-                                else
-                                {
-                                    // Advance the bookmark only if we successfully written to Kinesis Stream
-                                    Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
-                                    WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
-                                }
-                            }
-                            else
-                            {
-                                Logger.TraceFormat("Found no records to process");
-
-                                // Only advance the bookmark if no other process has the
-                                // current file locked, and its length is as we found it.
-
-                                var bufferedFilesCount = fileSet.Length;
-                                var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.InvariantCultureIgnoreCase);
-                                var isFirstFileUnlocked = IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset);
-                                Logger.TraceFormat("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; IsFirstFileUnlocked: {2}", bufferedFilesCount, isProcessingFirstFile, isFirstFileUnlocked);
-
-                                if (bufferedFilesCount == 2 && isProcessingFirstFile && isFirstFileUnlocked)
-                                {
-                                    Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
-                                    WriteBookmark(bookmark, 0, fileSet[1]);
-                                }
-
-                                if (bufferedFilesCount > 2)
-                                {
-                                    // Once there's a third file waiting to ship, we do our
-                                    // best to move on, though a lock on the current file
-                                    // will delay this.
-                                    Logger.InfoFormat("Deleting '{0}'", fileSet[0]);
-
-                                    File.Delete(fileSet[0]);
-                                }
-                            }
-                        }
-                    }
-                }
-                while (count == _batchPostingLimit);
-            }
-            catch (Exception ex)
+        protected override PutRecordBatchResponse SendRecords(List<Record> records, out bool successful)
+        {
+            var request = new PutRecordBatchRequest
             {
-                Logger.DebugException("Exception while emitting periodic batch", ex);
-                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _streamName), ex));
-            }
-            finally
+                DeliveryStreamName = _streamName,
+                Records = records
+            };
+
+            Logger.TraceFormat("Writing {0} records to firehose", records.Count);
+            var response = _kinesisFirehoseClient.PutRecordBatch(request);
+
+            successful = response.FailedPutCount == 0;
+            return response;
+        }
+
+        protected override void HandleError(PutRecordBatchResponse response, int originalRecordCount)
+        {
+            foreach (var record in response.RequestResponses)
             {
-                lock (_stateLock)
-                {
-                    if (!_unloading)
-                        SetTimer();
-                }
+                Logger.TraceFormat("Firehose failed to index record in stream '{0}'. {1} {2} ", _streamName, record.ErrorCode, record.ErrorMessage);
             }
+            // fire event
+            OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _streamName, response.FailedPutCount, originalRecordCount), null));
         }
     }
 }

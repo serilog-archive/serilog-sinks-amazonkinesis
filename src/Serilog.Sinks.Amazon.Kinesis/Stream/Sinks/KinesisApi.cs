@@ -19,7 +19,7 @@ using Amazon.Kinesis.Model;
 using Amazon.Runtime;
 using Serilog.Debugging;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Stream
+namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 {
     /// <summary>
     /// Utilities to create and delete Amazon Kinesis streams.

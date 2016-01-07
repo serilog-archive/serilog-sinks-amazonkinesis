@@ -15,7 +15,7 @@
 using System;
 using Amazon.KinesisFirehose;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Firehose
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
 {
     internal class KinesisSinkState : KinesisSinkStateBase
     {

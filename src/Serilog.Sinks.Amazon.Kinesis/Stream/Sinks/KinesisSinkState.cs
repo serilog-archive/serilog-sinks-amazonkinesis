@@ -15,7 +15,7 @@
 using System;
 using Amazon.Kinesis;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Stream
+namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 {
     internal class KinesisSinkState : KinesisSinkStateBase
     {

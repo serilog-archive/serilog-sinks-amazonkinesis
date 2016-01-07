@@ -14,7 +14,7 @@
 
 using Amazon.Kinesis;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Stream
+namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 {
     /// <summary>
     ///     Provides KinesisSink with configurable options

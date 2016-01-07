@@ -6,6 +6,7 @@ using Serilog;
 using Serilog.Debugging;
 using Serilog.Sinks.Amazon.Kinesis;
 using Serilog.Sinks.Amazon.Kinesis.Stream;
+using Serilog.Sinks.Amazon.Kinesis.Stream.Sinks;
 
 namespace AmazonKinesisSample
 {

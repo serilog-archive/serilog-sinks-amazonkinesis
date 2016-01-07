@@ -67,10 +67,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Serilog.Sinks.Amazon.Kinesis.Stream\Serilog.Sinks.Amazon.Kinesis.Stream.csproj">
-      <Project>{8164BDE4-48FE-4A81-B33E-FEE348904BB8}</Project>
-      <Name>Serilog.Sinks.Amazon.Kinesis.Stream</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Serilog.Sinks.Amazon.Kinesis\Serilog.Sinks.Amazon.Kinesis.csproj">
       <Project>{9cddc147-93bb-47dc-899c-b41384d7ae23}</Project>
       <Name>Serilog.Sinks.Amazon.Kinesis</Name>
