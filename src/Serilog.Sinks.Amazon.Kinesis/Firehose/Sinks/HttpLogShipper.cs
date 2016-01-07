@@ -16,20 +16,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using Amazon.Kinesis.Model;
-using Serilog.Sinks.Amazon.Kinesis.Stream.Logging;
+using Amazon.KinesisFirehose.Model;
+using Serilog.Sinks.Amazon.Kinesis.Logging;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Stream
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 {
     class HttpLogShipper : HttpLogShipperBase
     {
         private static readonly ILog Logger = LogProvider.For<HttpLogShipper>();
         private readonly KinesisSinkState _state;
 
-        public HttpLogShipper(KinesisSinkState state):base(state)
+
+
+        public HttpLogShipper(KinesisSinkState state) : base(state)
         {
             _state = state;
         }
@@ -67,7 +67,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                         {
                             count = 0;
 
-                            var records = new List<PutRecordsRequestEntry>();
+                            var records = new List<Record>();
                             using (var current = File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 startingOffset = current.Position = nextLineBeginsAtOffset;
@@ -77,9 +77,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                                 {
                                     ++count;
                                     var bytes = Encoding.UTF8.GetBytes(nextLine);
-                                    var record = new PutRecordsRequestEntry
+                                    var record = new Record
                                     {
-                                        PartitionKey = Guid.NewGuid().ToString(),
                                         Data = new MemoryStream(bytes)
                                     };
                                     records.Add(record);
@@ -88,23 +87,23 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
 
                             if (count > 0)
                             {
-                                var request = new PutRecordsRequest
+                                var request = new PutRecordBatchRequest
                                 {
-                                    StreamName = _state.Options.StreamName,
+                                    DeliveryStreamName = _streamName,
                                     Records = records
                                 };
 
-                                Logger.TraceFormat("Writing {0} records to kinesis", count);
-                                PutRecordsResponse response = _state.KinesisClient.PutRecords(request);
+                                Logger.TraceFormat("Writing {0} records to firehose", count);
+                                PutRecordBatchResponse response = _state.KinesisFirehoseClient.PutRecordBatch(request);
 
-                                if (response.FailedRecordCount > 0)
+                                if (response.FailedPutCount > 0)
                                 {
-                                    foreach (var record in response.Records)
+                                    foreach (var record in response.RequestResponses)
                                     {
-                                        Logger.TraceFormat("Kinesis failed to index record in stream '{0}'. {1} {2} ", _state.Options.StreamName, record.ErrorCode, record.ErrorMessage);
+                                        Logger.TraceFormat("Firehose failed to index record in stream '{0}'. {1} {2} ", _streamName, record.ErrorCode, record.ErrorMessage);
                                     }
                                     // fire event
-                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _state.Options.StreamName, response.FailedRecordCount, count),null));
+                                    OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _streamName, response.FailedPutCount, count), null));
                                 }
                                 else
                                 {
@@ -121,7 +120,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                                 // current file locked, and its length is as we found it.
 
                                 var bufferedFilesCount = fileSet.Length;
-                                var isProcessingFirstFile = fileSet.First().Equals(currentFilePath,StringComparison.InvariantCultureIgnoreCase);
+                                var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.InvariantCultureIgnoreCase);
                                 var isFirstFileUnlocked = IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset);
                                 Logger.TraceFormat("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; IsFirstFileUnlocked: {2}", bufferedFilesCount, isProcessingFirstFile, isFirstFileUnlocked);
 
@@ -149,7 +148,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
             catch (Exception ex)
             {
                 Logger.DebugException("Exception while emitting periodic batch", ex);
-                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _state.Options.StreamName),ex));
+                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _streamName), ex));
             }
             finally
             {

@@ -79,14 +79,6 @@
     <Compile Include="..\..\assets\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="KinesisLoggerConfigurationExtensions.cs" />
-    <Compile Include="Sinks\HttpLogShipper.cs" />
-    <Compile Include="Sinks\HttpLogShipperBase.cs" />
-    <Compile Include="Sinks\KinesisSink.cs" />
-    <Compile Include="Sinks\KinesisSinkState.cs" />
-    <Compile Include="Sinks\KinesisApi.cs" />
-    <Compile Include="Sinks\DurableKinesisSink.cs" />
-    <Compile Include="Sinks\KinesisStreamSinkOptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\Serilog.snk">

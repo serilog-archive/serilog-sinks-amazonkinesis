@@ -4,9 +4,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using Serilog.Sinks.Amazon.Kinesis.Stream.Logging;
+using Serilog.Sinks.Amazon.Kinesis.Logging;
 
-namespace Serilog.Sinks.Amazon.Kinesis.Stream
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 {
     internal abstract class HttpLogShipperBase : IDisposable
     {

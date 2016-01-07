@@ -68,13 +68,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
-    <Compile Include="KinesisFirehoseLoggerConfigurationExtensions.cs" />
-    <Compile Include="Sinks\DurableKinesisFirehoseSink.cs" />
-    <Compile Include="Sinks\HttpLogShipper.cs" />
-    <Compile Include="Sinks\HttpLogShipperBase.cs" />
-    <Compile Include="Sinks\KinesisFirehoseSinkOptions.cs" />
-    <Compile Include="Sinks\KinesisSinkState.cs" />
-    <Compile Include="Sinks\KinesisFirehoseSink.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -3,7 +3,7 @@
   <metadata>
     <id>Serilog.Sinks.AmazonKinesis</id>
     <version>$version$</version>
-    <authors>Jake Scott</authors>
+    <authors>Jake Scott, Justin Thirkell, Alexander Savchuk</authors>
     <description>Serilog event sink that writes to Amazon Kinesis.</description>
     <language>en-US</language>
     <projectUrl>http://serilog.net</projectUrl>
@@ -12,30 +12,18 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>serilog logging aws amazon kinesis structured logging</tags>
     <dependencies>
-        <dependency id="AWSSDK.Core" version="3.1.1.0" />
-        <dependency id="AWSSDK.Kinesis" version="3.1.0.1" />
-        <dependency id="AWSSDK.KinesisFirehose" version="3.1.0.0" />
-        <dependency id="Serilog" version="1.5.10" />
+        <dependency id="AWSSDK.Core" version="3.1.4.3" />
+        <dependency id="AWSSDK.Kinesis" version="3.1.2.2" />
+        <dependency id="AWSSDK.KinesisFirehose" version="3.1.0.2" />
+        <dependency id="Serilog" version="1.5.14" />
     </dependencies>
   </metadata>
   <files>
     <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net45" />
     <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.dll" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.pdb" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose\bin\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.xml" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.dll" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.pdb" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Firehose.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Firehose.xml" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Stream\bin\Release\Serilog.Sinks.Amazon.Kinesis.Stream.dll" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Stream\bin\Release\Serilog.Sinks.Amazon.Kinesis.Stream.pdb" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Stream\bin\Release\Serilog.Sinks.Amazon.Kinesis.Stream.xml" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Stream.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Stream.dll" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Stream.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Stream.pdb" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis.Stream.net40\bin40\Release\Serilog.Sinks.Amazon.Kinesis.Stream.xml" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin40\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin40\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin40\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net40" />
   </files>
 </package>
