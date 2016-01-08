@@ -222,7 +222,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
 #endif
                 if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
                 {
-                    Logger.Trace("Swallowed I/O exception");
+                    Logger.TraceException("Swallowed I/O exception", ex);
                 }
                 else
                 {
@@ -263,11 +263,11 @@ namespace Serilog.Sinks.Amazon.Kinesis
 #endif
                 if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
                 {
-                    Logger.Trace("Swallowed I/O exception");
+                    Logger.TraceException("Swallowed I/O exception while testing locked status of {0}", ex, file);
                 }
                 else
                 {
-                    Logger.ErrorException("Unexpected I/O exception", ex);
+                    Logger.ErrorException("Unexpected I/O exception while testing locked status of {0}", ex, file);
                 }
             }
             catch (Exception ex)
