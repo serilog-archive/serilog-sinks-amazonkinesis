@@ -248,7 +248,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
         {
             try
             {
-                using (var fileStream = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                using (var fileStream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     return fileStream.Length <= nextLineBeginsAtOffset;
                 }
