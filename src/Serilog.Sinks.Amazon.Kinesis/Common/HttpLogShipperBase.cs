@@ -213,6 +213,18 @@ namespace Serilog.Sinks.Amazon.Kinesis
                     }
                 } while (count == _batchPostingLimit);
             }
+            catch (IOException ex)
+            {
+#if NET40
+                long win32ErrorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & 0xFFFF;
+#else
+                long win32ErrorCode = ex.HResult & 0xFFFF;
+#endif
+                if (win32ErrorCode != ERROR_SHARING_VIOLATION && win32ErrorCode != ERROR_LOCK_VIOLATION )
+                {
+                    Logger.TraceException("Unexpected I/O exception", ex);
+                }
+            }
             catch (Exception ex)
             {
                 Logger.DebugException("Exception while emitting periodic batch", ex);
