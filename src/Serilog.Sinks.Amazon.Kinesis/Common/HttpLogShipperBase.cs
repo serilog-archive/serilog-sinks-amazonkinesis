@@ -13,7 +13,9 @@ namespace Serilog.Sinks.Amazon.Kinesis
         const long ERROR_SHARING_VIOLATION = 0x20;
         const long ERROR_LOCK_VIOLATION = 0x21;
 
-        protected static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        ILog _logger;
+        protected ILog Logger => _logger ?? (_logger = LogProvider.GetLogger(GetType()));
+
         protected readonly int _batchPostingLimit;
         protected readonly string _bookmarkFilename;
         protected readonly string _candidateSearchPath;
@@ -211,9 +213,25 @@ namespace Serilog.Sinks.Amazon.Kinesis
                     }
                 } while (count == _batchPostingLimit);
             }
+            catch (IOException ex)
+            {
+#if NET40
+                long win32ErrorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & 0xFFFF;
+#else
+                long win32ErrorCode = ex.HResult & 0xFFFF;
+#endif
+                if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
+                {
+                    Logger.Trace("Swallowed I/O exception");
+                }
+                else
+                {
+                    Logger.ErrorException("Unexpected I/O exception", ex);
+                }
+            }
             catch (Exception ex)
             {
-                Logger.DebugException("Exception while emitting periodic batch", ex);
+                Logger.ErrorException("Exception while emitting periodic batch", ex);
                 OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _streamName), ex));
             }
             finally
@@ -226,7 +244,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
         }
 
-        protected static bool WeAreAtEndOfTheFile(string file, long nextLineBeginsAtOffset)
+        protected bool WeAreAtEndOfTheFile(string file, long nextLineBeginsAtOffset)
         {
             try
             {
@@ -243,15 +261,18 @@ namespace Serilog.Sinks.Amazon.Kinesis
 #else
                 long win32ErrorCode = ex.HResult & 0xFFFF;
 #endif
-//                if (errorCode != 32 && errorCode != 33)
-                if (win32ErrorCode != ERROR_SHARING_VIOLATION && win32ErrorCode != ERROR_LOCK_VIOLATION )
+                if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
                 {
-                    Logger.TraceException("Unexpected I/O exception while testing locked status of {0}", ex, file);
+                    Logger.Trace("Swallowed I/O exception");
+                }
+                else
+                {
+                    Logger.ErrorException("Unexpected I/O exception", ex);
                 }
             }
             catch (Exception ex)
             {
-                Logger.TraceException("Unexpected exception while testing locked status of {0}", ex, file);
+                Logger.ErrorException("Unexpected exception while testing locked status of {0}", ex, file);
             }
 
             return false;
