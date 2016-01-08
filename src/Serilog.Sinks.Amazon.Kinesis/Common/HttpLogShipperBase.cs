@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using Serilog.Sinks.Amazon.Kinesis.Logging;
@@ -11,6 +10,9 @@ namespace Serilog.Sinks.Amazon.Kinesis
 {
     internal abstract class HttpLogShipperBase<TRecord, TResponse> : IDisposable
     {
+        const long ERROR_SHARING_VIOLATION = 0x20;
+        const long ERROR_LOCK_VIOLATION = 0x21;
+
         protected static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         protected readonly int _batchPostingLimit;
         protected readonly string _bookmarkFilename;
@@ -236,8 +238,14 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
             catch (IOException ex)
             {
-                var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
-                if (errorCode != 32 && errorCode != 33)
+#if NET40
+                //var win32ErrorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & ((1 << 16) - 1);
+                long win32ErrorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & 0xFFFF;
+#else
+                long win32ErrorCode = ex.HResult & 0xFFFF;
+#endif
+//                if (errorCode != 32 && errorCode != 33)
+                if (win32ErrorCode != ERROR_SHARING_VIOLATION && win32ErrorCode != ERROR_LOCK_VIOLATION )
                 {
                     Logger.TraceException("Unexpected I/O exception while testing locked status of {0}", ex, file);
                 }
