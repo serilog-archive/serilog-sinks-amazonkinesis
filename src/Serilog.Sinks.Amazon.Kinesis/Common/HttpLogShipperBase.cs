@@ -220,9 +220,13 @@ namespace Serilog.Sinks.Amazon.Kinesis
 #else
                 long win32ErrorCode = ex.HResult & 0xFFFF;
 #endif
-                if (win32ErrorCode != ERROR_SHARING_VIOLATION && win32ErrorCode != ERROR_LOCK_VIOLATION )
+                if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
                 {
-                    Logger.TraceException("Unexpected I/O exception", ex);
+                    Logger.Trace("Swallowed I/O exception");
+                }
+                else
+                {
+                    Logger.DebugException("Unexpected I/O exception", ex);
                 }
             }
             catch (Exception ex)
