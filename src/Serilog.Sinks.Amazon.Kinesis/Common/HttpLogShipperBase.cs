@@ -215,11 +215,8 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
             catch (IOException ex)
             {
-#if NET40
-                long win32ErrorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & 0xFFFF;
-#else
-                long win32ErrorCode = ex.HResult & 0xFFFF;
-#endif
+                long win32ErrorCode = GetWin32ErrorCode(ex);
+
                 if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
                 {
                     Logger.TraceException("Swallowed I/O exception", ex);
@@ -244,6 +241,16 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
         }
 
+        private long GetWin32ErrorCode(IOException ex)
+        {
+#if NET40
+            long win32ErrorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & 0xFFFF;
+#else
+            long win32ErrorCode = ex.HResult & 0xFFFF;
+#endif
+            return win32ErrorCode;
+        }
+
         protected bool WeAreAtEndOfTheFile(string file, long nextLineBeginsAtOffset)
         {
             try
@@ -255,12 +262,8 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
             catch (IOException ex)
             {
-#if NET40
-                //var win32ErrorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & ((1 << 16) - 1);
-                long win32ErrorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & 0xFFFF;
-#else
-                long win32ErrorCode = ex.HResult & 0xFFFF;
-#endif
+                long win32ErrorCode = GetWin32ErrorCode(ex);
+
                 if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
                 {
                     Logger.TraceException("Swallowed I/O exception while testing locked status of {0}", ex, file);
