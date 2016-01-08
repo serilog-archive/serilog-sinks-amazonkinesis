@@ -226,12 +226,12 @@ namespace Serilog.Sinks.Amazon.Kinesis
                 }
                 else
                 {
-                    Logger.DebugException("Unexpected I/O exception", ex);
+                    Logger.ErrorException("Unexpected I/O exception", ex);
                 }
             }
             catch (Exception ex)
             {
-                Logger.DebugException("Exception while emitting periodic batch", ex);
+                Logger.ErrorException("Exception while emitting periodic batch", ex);
                 OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _streamName), ex));
             }
             finally
@@ -261,15 +261,18 @@ namespace Serilog.Sinks.Amazon.Kinesis
 #else
                 long win32ErrorCode = ex.HResult & 0xFFFF;
 #endif
-//                if (errorCode != 32 && errorCode != 33)
-                if (win32ErrorCode != ERROR_SHARING_VIOLATION && win32ErrorCode != ERROR_LOCK_VIOLATION )
+                if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
                 {
-                    Logger.TraceException("Unexpected I/O exception while testing locked status of {0}", ex, file);
+                    Logger.Trace("Swallowed I/O exception");
+                }
+                else
+                {
+                    Logger.ErrorException("Unexpected I/O exception", ex);
                 }
             }
             catch (Exception ex)
             {
-                Logger.TraceException("Unexpected exception while testing locked status of {0}", ex, file);
+                Logger.ErrorException("Unexpected exception while testing locked status of {0}", ex, file);
             }
 
             return false;
