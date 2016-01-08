@@ -13,7 +13,9 @@ namespace Serilog.Sinks.Amazon.Kinesis
         const long ERROR_SHARING_VIOLATION = 0x20;
         const long ERROR_LOCK_VIOLATION = 0x21;
 
-        protected static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        ILog _logger;
+        protected ILog Logger => _logger ?? (_logger = LogProvider.GetLogger(GetType()));
+
         protected readonly int _batchPostingLimit;
         protected readonly string _bookmarkFilename;
         protected readonly string _candidateSearchPath;
@@ -226,7 +228,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
         }
 
-        protected static bool WeAreAtEndOfTheFile(string file, long nextLineBeginsAtOffset)
+        protected bool WeAreAtEndOfTheFile(string file, long nextLineBeginsAtOffset)
         {
             try
             {
