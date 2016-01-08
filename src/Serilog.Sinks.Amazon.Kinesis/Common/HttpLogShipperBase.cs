@@ -120,17 +120,18 @@ namespace Serilog.Sinks.Amazon.Kinesis
         {
             try
             {
-                var count = 0;
+                int count;
 
                 do
                 {
+                    count = 0;
+
                     // Locking the bookmark ensures that though there may be multiple instances of this
                     // class running, only one will ship logs at a time.
 
                     using (var bookmark = File.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                     {
                         long nextLineBeginsAtOffset;
-                        long startingOffset;
                         string currentFilePath;
 
                         TryReadBookmark(bookmark, out nextLineBeginsAtOffset, out currentFilePath);
@@ -143,70 +144,68 @@ namespace Serilog.Sinks.Amazon.Kinesis
                             nextLineBeginsAtOffset = 0;
                             currentFilePath = fileSet.FirstOrDefault();
                             Logger.InfoFormat("Current log file is {0}", currentFilePath);
+
+                            if (currentFilePath == null) continue;
                         }
 
-                        if (currentFilePath != null)
+                        var records = new List<TRecord>();
+                        long startingOffset;
+                        using (var current = File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         {
-                            count = 0;
+                            startingOffset = current.Position = nextLineBeginsAtOffset;
 
-                            var records = new List<TRecord>();
-                            using (var current = File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                            string nextLine;
+                            while (count < _batchPostingLimit && TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
                             {
-                                startingOffset = current.Position = nextLineBeginsAtOffset;
-
-                                string nextLine;
-                                while (count < _batchPostingLimit && TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
-                                {
-                                    ++count;
-                                    var bytes = Encoding.UTF8.GetBytes(nextLine);
-                                    var record = PrepareRecord(bytes);
-                                    records.Add(record);
-                                }
+                                ++count;
+                                var bytes = Encoding.UTF8.GetBytes(nextLine);
+                                var record = PrepareRecord(bytes);
+                                records.Add(record);
                             }
+                        }
 
-                            if (count > 0)
+                        if (count > 0)
+                        {
+                            bool successful;
+                            var response = SendRecords(records, out successful);
+
+                            if (!successful)
                             {
-                                bool successful;
-                                var response = SendRecords(records, out successful);
-
-                                if (!successful)
-                                {
-                                    HandleError(response, records.Count);
-                                }
-                                else
-                                {
-                                    // Advance the bookmark only if we successfully written to Kinesis Stream
-                                    Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
-                                    WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
-                                }
+                                HandleError(response, records.Count);
                             }
                             else
                             {
-                                Logger.TraceFormat("Found no records to process");
+                                // Advance the bookmark only if we successfully wrote
+                                Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
+                                WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
+                            }
+                        }
+                        else
+                        {
+                            Logger.TraceFormat("Found no records to process");
 
-                                // Only advance the bookmark if no other process has the
-                                // current file locked, and its length is as we found it.
+                            // Only advance the bookmark if no other process has the
+                            // current file locked, and its length is as we found it.
 
-                                var bufferedFilesCount = fileSet.Length;
-                                var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.InvariantCultureIgnoreCase);
-                                var isFirstFileUnlocked = IsUnlockedAtLength(currentFilePath, nextLineBeginsAtOffset);
-                                Logger.TraceFormat("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; IsFirstFileUnlocked: {2}", bufferedFilesCount, isProcessingFirstFile, isFirstFileUnlocked);
+                            var bufferedFilesCount = fileSet.Length;
+                            var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.InvariantCultureIgnoreCase);
+                            var weAreAtEndOfTheFile = WeAreAtEndOfTheFile(currentFilePath, nextLineBeginsAtOffset);
+                            Logger.TraceFormat("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; WeAreAtEndOfTheFile: {2}", bufferedFilesCount, isProcessingFirstFile, weAreAtEndOfTheFile);
 
-                                if (bufferedFilesCount == 2 && isProcessingFirstFile && isFirstFileUnlocked)
-                                {
-                                    Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
-                                    WriteBookmark(bookmark, 0, fileSet[1]);
-                                }
+                            if (bufferedFilesCount == 2 && isProcessingFirstFile && weAreAtEndOfTheFile)
+                            {
+                                Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
+                                WriteBookmark(bookmark, 0, fileSet[1]);
+                            }
 
-                                if (bufferedFilesCount > 2)
-                                {
-                                    // Once there's a third file waiting to ship, we do our
-                                    // best to move on, though a lock on the current file
-                                    // will delay this.
-                                    Logger.InfoFormat("Deleting '{0}'", fileSet[0]);
+                            if (bufferedFilesCount > 2)
+                            {
+                                // Once there's a third file waiting to ship, we do our
+                                // best to move on, though a lock on the current file
+                                // will delay this.
+                                Logger.InfoFormat("Deleting '{0}'", fileSet[0]);
 
-                                    File.Delete(fileSet[0]);
-                                }
+                                File.Delete(fileSet[0]);
                             }
                         }
                     }
@@ -227,13 +226,13 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
         }
 
-        protected static bool IsUnlockedAtLength(string file, long maxLen)
+        protected static bool WeAreAtEndOfTheFile(string file, long nextLineBeginsAtOffset)
         {
             try
             {
                 using (var fileStream = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                 {
-                    return fileStream.Length <= maxLen;
+                    return fileStream.Length <= nextLineBeginsAtOffset;
                 }
             }
             catch (IOException ex)
