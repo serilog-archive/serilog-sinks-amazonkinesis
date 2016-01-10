@@ -365,7 +365,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
                 .OrderBy(n => n)
                 .ToArray();
             var fileSetDesc = string.Join(";", fileSet);
-            Logger.InfoFormat("FileSet contains: {0}", fileSetDesc);
+            Logger.TraceFormat("FileSet contains: {0}", fileSetDesc);
             return fileSet;
         }
     }
