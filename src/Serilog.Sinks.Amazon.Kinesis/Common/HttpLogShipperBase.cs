@@ -191,13 +191,16 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
                             var bufferedFilesCount = fileSet.Length;
                             var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.InvariantCultureIgnoreCase);
-                            var weAreAtEndOfTheFile = WeAreAtEndOfTheFile(currentFilePath, nextLineBeginsAtOffset);
-                            Logger.TraceFormat("BufferedFilesCount: {0}; IsProcessingFirstFile: {1}; WeAreAtEndOfTheFile: {2}", bufferedFilesCount, isProcessingFirstFile, weAreAtEndOfTheFile);
 
-                            if (bufferedFilesCount == 2 && isProcessingFirstFile && weAreAtEndOfTheFile)
+                            if (bufferedFilesCount == 2 && isProcessingFirstFile)
                             {
+                              Logger.TraceFormat("BufferedFilesCount: {0}; AreProcessingFirstFile: true", bufferedFilesCount);
+                              var weAreAtEndOfTheFileAndItIsNotLockedByAnotherThread = WeAreAtEndOfTheFileAndItIsNotLockedByAnotherThread(currentFilePath, nextLineBeginsAtOffset);
+                              if (weAreAtEndOfTheFileAndItIsNotLockedByAnotherThread)
+                              {
                                 Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
-                                WriteBookmark(bookmark, 0, fileSet[1]);
+                                WriteBookmark(bookmark, 0, fileSet[1]);                                
+                              }
                             }
 
                             if (bufferedFilesCount > 2)
@@ -251,11 +254,11 @@ namespace Serilog.Sinks.Amazon.Kinesis
             return win32ErrorCode;
         }
 
-        protected bool WeAreAtEndOfTheFile(string file, long nextLineBeginsAtOffset)
+        protected bool WeAreAtEndOfTheFileAndItIsNotLockedByAnotherThread(string file, long nextLineBeginsAtOffset)
         {
             try
             {
-                using (var fileStream = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                using (var fileStream = File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
                 {
                     return fileStream.Length <= nextLineBeginsAtOffset;
                 }
@@ -368,7 +371,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
                 .OrderBy(n => n)
                 .ToArray();
             var fileSetDesc = string.Join(";", fileSet);
-            Logger.InfoFormat("FileSet contains: {0}", fileSetDesc);
+            Logger.TraceFormat("FileSet contains: {0}", fileSetDesc);
             return fileSet;
         }
     }
