@@ -336,6 +336,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
             if (bookmark.Length != 0)
             {
+                bookmark.Position = 0;
                 string current;
 #if NET40
     // Important not to dispose this StreamReader as the stream must remain open.
@@ -350,7 +351,6 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
                 if (current != null)
                 {
-                    bookmark.Position = 0;
                     var parts = current.Split(new[] {":::"}, StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length == 2)
                     {
