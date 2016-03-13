@@ -340,10 +340,10 @@ namespace Serilog.Sinks.Amazon.Kinesis
                 string current;
 #if NET40
     // Important not to dispose this StreamReader as the stream must remain open.
-                var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128);
+                var reader = new StreamReader(bookmark, _bookmarkEncoding, false, 128);
                 current = reader.ReadLine();
 #else
-                using (var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128, true))
+                using (var reader = new StreamReader(bookmark, _bookmarkEncoding, false, 128, true))
                 {
                     current = reader.ReadLine();
                 }
