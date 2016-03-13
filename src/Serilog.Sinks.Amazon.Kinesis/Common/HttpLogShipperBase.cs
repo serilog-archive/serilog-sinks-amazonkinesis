@@ -284,19 +284,15 @@ namespace Serilog.Sinks.Amazon.Kinesis
             return false;
         }
 
+        private static readonly Encoding _bookmarkEncoding = new UTF8Encoding(false, false);
+
         protected static void WriteBookmark(FileStream bookmark, long nextLineBeginsAtOffset, string currentFile)
         {
-#if NET40
-    // Important not to dispose this StreamReader as the stream must remain open.
-            var writer = new StreamWriter(bookmark);
-            writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
-            writer.Flush();
-#else
-            using (var writer = new StreamWriter(bookmark))
-            {
-                writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
-            }
-#endif
+            bookmark.SetLength(0);
+            var content = string.Format("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
+            var byteContent = _bookmarkEncoding.GetBytes(content);
+            bookmark.Write(byteContent, 0, byteContent.Length);
+            bookmark.Flush();
         }
 
         // It would be ideal to chomp whitespace here, but not required.
