@@ -284,19 +284,15 @@ namespace Serilog.Sinks.Amazon.Kinesis
             return false;
         }
 
+        private static readonly Encoding _bookmarkEncoding = new UTF8Encoding(false, false);
+
         protected static void WriteBookmark(FileStream bookmark, long nextLineBeginsAtOffset, string currentFile)
         {
-#if NET40
-    // Important not to dispose this StreamReader as the stream must remain open.
-            var writer = new StreamWriter(bookmark);
-            writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
-            writer.Flush();
-#else
-            using (var writer = new StreamWriter(bookmark))
-            {
-                writer.WriteLine("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
-            }
-#endif
+            bookmark.SetLength(0);
+            var content = string.Format("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
+            var byteContent = _bookmarkEncoding.GetBytes(content);
+            bookmark.Write(byteContent, 0, byteContent.Length);
+            bookmark.Flush();
         }
 
         // It would be ideal to chomp whitespace here, but not required.
@@ -340,13 +336,14 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
             if (bookmark.Length != 0)
             {
+                bookmark.Position = 0;
                 string current;
 #if NET40
     // Important not to dispose this StreamReader as the stream must remain open.
-                var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128);
+                var reader = new StreamReader(bookmark, _bookmarkEncoding, false, 128);
                 current = reader.ReadLine();
 #else
-                using (var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128, true))
+                using (var reader = new StreamReader(bookmark, _bookmarkEncoding, false, 128, true))
                 {
                     current = reader.ReadLine();
                 }
@@ -354,7 +351,6 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
                 if (current != null)
                 {
-                    bookmark.Position = 0;
                     var parts = current.Split(new[] {":::"}, StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length == 2)
                     {
