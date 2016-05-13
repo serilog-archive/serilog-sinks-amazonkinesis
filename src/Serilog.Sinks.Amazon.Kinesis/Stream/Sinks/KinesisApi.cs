@@ -138,7 +138,12 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
             var request = new CreateStreamRequest { StreamName = streamName, ShardCount = shardCount };
             try
             {
-                CreateStreamResponse response = kinesisClient.CreateStream(request);
+#if DNXCORE50
+				CreateStreamResponse response = kinesisClient.CreateStreamAsync(request).GetAwaiter().GetResult();
+#else
+				CreateStreamResponse response = kinesisClient.CreateStream(request);
+#endif
+
                 return response;
             }
             catch (AmazonServiceException e)
@@ -155,8 +160,13 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
             var request = new DescribeStreamRequest { StreamName = streamName };
             try
             {
-                var response = kinesisClient.DescribeStream(request);
-                return response;
+#if DNXCORE50
+				var response = kinesisClient.DescribeStreamAsync(request).GetAwaiter().GetResult();
+#else
+				var response = kinesisClient.DescribeStream(request);
+#endif
+
+				return response;
             }
             catch (ResourceNotFoundException)
             {

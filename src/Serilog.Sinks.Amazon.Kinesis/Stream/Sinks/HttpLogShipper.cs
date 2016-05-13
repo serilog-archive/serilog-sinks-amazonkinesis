@@ -48,9 +48,14 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
             };
 
             Logger.TraceFormat("Writing {0} records to kinesis", records.Count);
+#if DNXCORE50
+			var response = _kinesisClient.PutRecordsAsync(request).GetAwaiter().GetResult();
+#else
             var response = _kinesisClient.PutRecords(request);
+#endif
 
-            successful = response.FailedRecordCount == 0;
+
+			successful = response.FailedRecordCount == 0;
             return response;
         }
 

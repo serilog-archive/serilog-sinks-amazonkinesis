@@ -85,16 +85,22 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
                 request.Records.Add(entry);
             }
 
-            _state.KinesisFirehoseClient.PutRecordBatch(request);
-        }
+#if DNXCORE50
+			_state.KinesisFirehoseClient.PutRecordBatchAsync(request).GetAwaiter().GetResult();
+
+#else
+			_state.KinesisFirehoseClient.PutRecordBatch(request);
+#endif
+
+		}
 
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="evt"></param>
-        /// <returns></returns>
-        protected override bool CanInclude(LogEvent evt)
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="evt"></param>
+		/// <returns></returns>
+		protected override bool CanInclude(LogEvent evt)
         {
             return _minimumAcceptedLevel == null ||
                 (int)_minimumAcceptedLevel <= (int)evt.Level;

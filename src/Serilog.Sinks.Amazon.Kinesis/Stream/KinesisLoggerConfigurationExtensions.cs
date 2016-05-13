@@ -45,7 +45,7 @@ namespace Serilog
             if (kinesisClient == null) throw new ArgumentNullException("kinesisClient");
 
             ILogEventSink sink;
-            if (options.BufferBaseFilename == null)
+            if (options.BufferBaseFilename == options.BufferBaseFilenameAppend)
             {
                 sink = new KinesisSink(options, kinesisClient);
             }

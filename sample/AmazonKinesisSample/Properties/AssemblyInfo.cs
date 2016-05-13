@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Serilog.Sinks.Amazon.Kinesis")]
+[assembly: AssemblyTitle("AmazonKinesisSample")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ECD")]
-[assembly: AssemblyProduct("Serilog.Sinks.Amazon.Kinesis")]
+[assembly: AssemblyProduct("AmazonKinesisSample")]
 [assembly: AssemblyCopyright("Copyright © ECD 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,4 +20,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("51e5dd1a-f0ad-4350-a04d-4ad331f7b307")]
+[assembly: Guid("09e659eb-1928-4b49-9341-b362ff66c12d")]

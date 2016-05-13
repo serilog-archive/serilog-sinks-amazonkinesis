@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{037440DE-440B-4129-9F7A-09B42D00397E}"
 EndProject
@@ -16,9 +16,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{E9D1B5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{543E1315-71DE-40CE-A179-4B27B7A64125}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmazonKinesisSample", "sample\AmazonKinesisSample\AmazonKinesisSample.csproj", "{6672FF6B-5243-4588-986A-EEA9C0BD6C0B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Serilog.Sinks.Amazon.Kinesis", "src\Serilog.Sinks.Amazon.Kinesis\Serilog.Sinks.Amazon.Kinesis.xproj", "{51E5DD1A-F0AD-4350-A04D-4AD331F7B307}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesis", "src\Serilog.Sinks.Amazon.Kinesis\Serilog.Sinks.Amazon.Kinesis.csproj", "{9CDDC147-93BB-47DC-899C-B41384D7AE23}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AmazonKinesisSample", "sample\AmazonKinesisSample\AmazonKinesisSample.xproj", "{09E659EB-1928-4B49-9341-B362FF66C12D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{58B6C561-B351-41C7-ABD7-BA1C8A5E2CE8}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,20 +31,20 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6672FF6B-5243-4588-986A-EEA9C0BD6C0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6672FF6B-5243-4588-986A-EEA9C0BD6C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6672FF6B-5243-4588-986A-EEA9C0BD6C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6672FF6B-5243-4588-986A-EEA9C0BD6C0B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9CDDC147-93BB-47DC-899C-B41384D7AE23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9CDDC147-93BB-47DC-899C-B41384D7AE23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9CDDC147-93BB-47DC-899C-B41384D7AE23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9CDDC147-93BB-47DC-899C-B41384D7AE23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51E5DD1A-F0AD-4350-A04D-4AD331F7B307}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51E5DD1A-F0AD-4350-A04D-4AD331F7B307}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51E5DD1A-F0AD-4350-A04D-4AD331F7B307}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51E5DD1A-F0AD-4350-A04D-4AD331F7B307}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09E659EB-1928-4B49-9341-B362FF66C12D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09E659EB-1928-4B49-9341-B362FF66C12D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09E659EB-1928-4B49-9341-B362FF66C12D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09E659EB-1928-4B49-9341-B362FF66C12D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{6672FF6B-5243-4588-986A-EEA9C0BD6C0B} = {543E1315-71DE-40CE-A179-4B27B7A64125}
-		{9CDDC147-93BB-47DC-899C-B41384D7AE23} = {037440DE-440B-4129-9F7A-09B42D00397E}
+		{51E5DD1A-F0AD-4350-A04D-4AD331F7B307} = {037440DE-440B-4129-9F7A-09B42D00397E}
+		{09E659EB-1928-4B49-9341-B362FF66C12D} = {543E1315-71DE-40CE-A179-4B27B7A64125}
 	EndGlobalSection
 EndGlobal

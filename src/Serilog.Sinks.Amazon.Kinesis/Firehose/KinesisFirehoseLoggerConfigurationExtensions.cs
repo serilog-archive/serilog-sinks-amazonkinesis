@@ -44,7 +44,7 @@ namespace Serilog
             if (options == null) throw new ArgumentNullException("options");
 
             ILogEventSink sink;
-            if (options.BufferBaseFilename == null)
+            if (options.BufferBaseFilename == options.BufferBaseFilenameAppend)
             {
                 sink = new KinesisFirehoseSink(options, kinesisFirehoseClient);
             }

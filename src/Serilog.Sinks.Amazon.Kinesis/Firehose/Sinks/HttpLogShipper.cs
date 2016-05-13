@@ -46,9 +46,14 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
             };
 
             Logger.TraceFormat("Writing {0} records to firehose", records.Count);
-            var response = _kinesisFirehoseClient.PutRecordBatch(request);
+#if DNXCORE50
+			var response = _kinesisFirehoseClient.PutRecordBatchAsync(request).GetAwaiter().GetResult();
+#else
+			var response = _kinesisFirehoseClient.PutRecordBatch(request);
+#endif
 
-            successful = response.FailedPutCount == 0;
+
+			successful = response.FailedPutCount == 0;
             return response;
         }
 

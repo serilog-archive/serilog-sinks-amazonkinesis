@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using Amazon;
 using Amazon.Kinesis;
+using Amazon.Runtime;
 using Serilog;
 using Serilog.Debugging;
 using Serilog.Sinks.Amazon.Kinesis;
@@ -25,7 +27,8 @@ namespace AmazonKinesisSample
         {
             SelfLog.Out = Console.Out;
 
-            var client = new AmazonKinesisClient();
+	        AWSCredentials creds = new BasicAWSCredentials("AccessKey", "SecretKey");
+            var client = new AmazonKinesisClient(creds);
 
             var streamOk = KinesisApi.CreateAndWaitForStreamToBecomeAvailable(
                 kinesisClient: client,
@@ -67,9 +70,13 @@ namespace AmazonKinesisSample
 #endif
 
             LogStuff();
-
+#if DNXCORE50
+            Log.Fatal("That's all folks!");
+#else
             Log.Fatal("That's all folks - and all done using {WorkingSet} bytes of RAM", Environment.WorkingSet);
-            Console.ReadKey();
+#endif
+
+			Console.ReadKey();
         }
 
         static void OnLogSendError(object sender, LogSendErrorEventArgs logSendErrorEventArgs) {
@@ -141,8 +148,12 @@ namespace AmazonKinesisSample
         {
             var sw = new Stopwatch();
             sw.Start();
-            Log.Debug("Processing some input on {MachineName}...", Environment.MachineName);
-            Thread.Sleep(Rng.Next(0, 100));
+#if DNXCORE50
+			Log.Debug("Processing some input on {MachineName}...", Environment.GetEnvironmentVariable("machinename"));
+#else
+			Log.Debug("Processing some input on {MachineName}...", Environment.MachineName);
+#endif
+	        Thread.Sleep(Rng.Next(0, 100));
             sw.Stop();
 
             Log.Information("Processed {@SensorInput} in {Time:000} ms", sensorInput, sw.ElapsedMilliseconds);
