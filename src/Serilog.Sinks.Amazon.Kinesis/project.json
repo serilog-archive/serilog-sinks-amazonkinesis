@@ -1,0 +1,50 @@
+{
+	"version": "2.0.0-beta-*",
+	"description": "Simple .NET logging with fully-structured events",
+	"authors": [ "Serilog Contributors" ],
+	"tags": [ "serilog", "amazon", "kinesis", "stream" ],
+	"projectUrl": "http://serilog.net",
+	"licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
+	"iconUrl": "http://serilog.net/images/serilog-sink-nuget.png",
+	"compilationOptions": {
+		"keyFile": "../../assets/Serilog.snk"
+	},
+	"frameworks": {
+		"dnx451": {
+			"frameworkAssemblies": {
+				"System.RunTime": "",
+				"System.IO": ""
+			},
+			"dependencies": {
+				"AWSSDK.Core": "3.1.4.3",
+				"AWSSDK.Kinesis": "3.1.2.2",
+				"AWSSDK.KinesisFirehose": "3.1.0.2",
+				"LibLog": "4.2.4",
+				"Serilog": "1.5.14"
+			},
+			"compilationOptions": {
+				"define": [ "APPDOMAIN" ]
+			}
+		},
+		"dnxcore50": {
+			"dependencies": {
+				"Microsoft.CSharp": "4.0.1-beta-23516",
+				"System.Collections": "4.0.11-beta-23516",
+				"System.Linq": "4.0.1-beta-23516",
+				"System.Runtime": "4.0.21-beta-23516",
+				"System.Threading": "4.0.11-beta-23516",
+				"System.Threading.Timer": "4.0.1-beta-23516",
+				"AWSSDK.Core": "3.2.3.1-beta",
+				"AWSSDK.Kinesis": "3.2.3.1-beta",
+				"AWSSDK.KinesisFirehose": "3.2.3.1-beta",
+				"Serilog": "2.0.0-beta-541",
+				"Serilog.Sinks.PeriodicBatching": "2.0.0-beta-702",
+				"Serilog.Sinks.RollingFile": "2.0.0-beta-700",
+				"LibLog": "4.2.5"
+			},
+			"compilationOptions": {
+				"define": [ "LIBLOG_PORTABLE" ]
+			}
+		}
+	}
+}

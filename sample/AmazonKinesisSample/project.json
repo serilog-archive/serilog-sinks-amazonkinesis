@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0-*",
+  "description": "AmazonKinesisSample Console Application",
+  "authors": [ "DHuntington" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
+	"dependencies": {
+		"Serilog.Sinks.Amazon.Kinesis": "2.0.0-beta-*",
+		"Serilog.Sinks.ColoredConsole": "2.0.0-beta-700"
+	},
+
+  "commands": {
+    "AmazonKinesisSample": "AmazonKinesisSample"
+  },
+
+  "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.1-beta-23516",
+        "System.Collections": "4.0.11-beta-23516",
+        "System.Console": "4.0.0-beta-23516",
+        "System.Linq": "4.0.1-beta-23516",
+        "System.Threading": "4.0.11-beta-23516"
+      }
+    }
+  }
+}

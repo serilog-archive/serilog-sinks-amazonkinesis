@@ -30,8 +30,12 @@ namespace Serilog.Sinks.Amazon.Kinesis
         protected HttpLogShipperBase(KinesisSinkStateBase state)
         {
             _period = state.SinkOptions.Period;
+#if APPDOMAIN
             _timer = new Timer(s => OnTick());
-            _batchPostingLimit = state.SinkOptions.BatchPostingLimit;
+#else
+			_timer = new Timer(s => OnTick(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+#endif
+			_batchPostingLimit = state.SinkOptions.BatchPostingLimit;
             _streamName = state.SinkOptions.StreamName;
             _bookmarkFilename = Path.GetFullPath(state.SinkOptions.BufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
@@ -40,8 +44,10 @@ namespace Serilog.Sinks.Amazon.Kinesis
             Logger.InfoFormat("Candidate search path is {0}", _candidateSearchPath);
             Logger.InfoFormat("Log folder is {0}", _logFolder);
 
+#if APPDOMAIN
             AppDomain.CurrentDomain.DomainUnload += OnAppDomainUnloading;
             AppDomain.CurrentDomain.ProcessExit += OnAppDomainUnloading;
+#endif
 
             SetTimer();
         }
@@ -60,10 +66,13 @@ namespace Serilog.Sinks.Amazon.Kinesis
         protected abstract void HandleError(TResponse response, int originalRecordCount);
         public event EventHandler<LogSendErrorEventArgs> LogSendError;
 
+#if APPDOMAIN
         void OnAppDomainUnloading(object sender, EventArgs e)
         {
             CloseAndFlush();
         }
+#endif
+
 
         protected void OnLogSendError(LogSendErrorEventArgs e)
         {
@@ -84,14 +93,18 @@ namespace Serilog.Sinks.Amazon.Kinesis
                 _unloading = true;
             }
 
+#if APPDOMAIN
             AppDomain.CurrentDomain.DomainUnload -= OnAppDomainUnloading;
             AppDomain.CurrentDomain.ProcessExit -= OnAppDomainUnloading;
 
             var wh = new ManualResetEvent(false);
             if (_timer.Dispose(wh))
                 wh.WaitOne();
-
-            OnTick();
+#else
+			_timer.Dispose();
+#endif
+			
+			OnTick();
         }
 
         /// <summary>
@@ -131,7 +144,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
                     // Locking the bookmark ensures that though there may be multiple instances of this
                     // class running, only one will ship logs at a time.
 
-                    using (var bookmark = File.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                    using (var bookmark = System.IO.File.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                     {
                         long nextLineBeginsAtOffset;
                         string currentFilePath;
@@ -141,7 +154,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
                         var fileSet = GetFileSet();
 
-                        if (currentFilePath == null || !File.Exists(currentFilePath))
+                        if (currentFilePath == null || !System.IO.File.Exists(currentFilePath))
                         {
                             nextLineBeginsAtOffset = 0;
                             currentFilePath = fileSet.FirstOrDefault();
@@ -152,7 +165,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
                         var records = new List<TRecord>();
                         long startingOffset;
-                        using (var current = File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var current = System.IO.File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         {
                             startingOffset = current.Position = nextLineBeginsAtOffset;
 
@@ -190,9 +203,14 @@ namespace Serilog.Sinks.Amazon.Kinesis
                             // current file locked, and its length is as we found it.
 
                             var bufferedFilesCount = fileSet.Length;
+#if DNXCORE50
+							var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.OrdinalIgnoreCase);
+#else
                             var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.InvariantCultureIgnoreCase);
+#endif
 
-                            if (bufferedFilesCount == 2 && isProcessingFirstFile)
+
+							if (bufferedFilesCount == 2 && isProcessingFirstFile)
                             {
                               Logger.TraceFormat("BufferedFilesCount: {0}; AreProcessingFirstFile: true", bufferedFilesCount);
                               var weAreAtEndOfTheFileAndItIsNotLockedByAnotherThread = WeAreAtEndOfTheFileAndItIsNotLockedByAnotherThread(currentFilePath, nextLineBeginsAtOffset);
@@ -210,7 +228,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
                                 // will delay this.
                                 Logger.InfoFormat("Deleting '{0}'", fileSet[0]);
 
-                                File.Delete(fileSet[0]);
+								System.IO.File.Delete(fileSet[0]);
                             }
                         }
                     }
@@ -258,7 +276,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
         {
             try
             {
-                using (var fileStream = File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (var fileStream = System.IO.File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
                 {
                     return fileStream.Length <= nextLineBeginsAtOffset;
                 }

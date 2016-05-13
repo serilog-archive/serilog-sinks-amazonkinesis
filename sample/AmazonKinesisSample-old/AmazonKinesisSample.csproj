@@ -66,12 +66,6 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Serilog.Sinks.Amazon.Kinesis\Serilog.Sinks.Amazon.Kinesis.csproj">
-      <Project>{9cddc147-93bb-47dc-899c-b41384d7ae23}</Project>
-      <Name>Serilog.Sinks.Amazon.Kinesis</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

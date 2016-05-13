@@ -87,16 +87,21 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
                 request.Records.Add(entry);
             }
 
+#if DNXCORE50
+            _state.KinesisClient.PutRecordsAsync(request).GetAwaiter().GetResult();
+#else
             _state.KinesisClient.PutRecords(request);
-        }
+#endif
+
+		}
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="evt"></param>
-        /// <returns></returns>
-        protected override bool CanInclude(LogEvent evt)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="evt"></param>
+		/// <returns></returns>
+		protected override bool CanInclude(LogEvent evt)
         {
             return _minimumAcceptedLevel == null ||
                 (int)_minimumAcceptedLevel <= (int)evt.Level;
