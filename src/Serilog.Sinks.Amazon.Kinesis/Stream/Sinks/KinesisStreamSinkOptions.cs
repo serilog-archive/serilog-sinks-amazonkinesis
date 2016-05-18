@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Amazon.Kinesis;
-
 namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 {
     /// <summary>
@@ -25,10 +23,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
         ///     Configures the Amazon Kinesis sink.
         /// </summary>
         /// <param name="streamName">The name of the Kinesis stream.</param>
-        /// <param name="shardCount"></param>
-        public KinesisStreamSinkOptions(string streamName, int? shardCount = null) : base(streamName)
+        public KinesisStreamSinkOptions(string streamName) : base(streamName)
         {
-            ShardCount = shardCount ?? 1;
         }
 
         /// <summary>
@@ -38,18 +34,5 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
         {
             get { return ".stream"; }
         }
-
-        /// <summary>
-        ///     The number of shards for this stream.
-        ///     A stream is composed of multiple shards, each of which provides a fixed unit of capacity.
-        ///     The total capacity of the stream is the sum of the capacities of its shards.
-        ///     Each shard corresponds to 1 MB/s of write capacity and 2 MB/s of read capacity.
-        /// </summary>
-        public int ShardCount { get; set; }
-
-        /// <summary>
-        ///     The Amazon Kinesis client.
-        /// </summary>
-        public IAmazonKinesis KinesisClient { get; set; }
     }
 }

@@ -42,7 +42,6 @@ namespace AmazonKinesisSample
                 loggerConfig.WriteTo.AmazonKinesis(
                     kinesisClient: client,
                     streamName: streamName,
-                    shardCount: shardCount,
                     period: TimeSpan.FromSeconds(2),
                     bufferBaseFilename: "./logs/kinesis-buffer",
                     onLogSendError: OnLogSendError

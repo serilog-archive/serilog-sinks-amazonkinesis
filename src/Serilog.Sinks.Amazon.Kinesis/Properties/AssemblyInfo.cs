@@ -8,8 +8,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Serilog.Sinks.Amazon.Kinesis")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("Serilog.Sinks.AmazonKinesisFirehose-net40")]
-[assembly: AssemblyCopyright("Copyright © Serilog Contributors 2015")]
+[assembly: AssemblyProduct("Serilog.Sinks.Amazon.Kinesis")]
+[assembly: AssemblyCopyright("Copyright © Serilog Contributors 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,3 +33,6 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+[assembly: InternalsVisibleTo("Serilog.Sinks.Amazon.Kinesis.Tests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] // Required to do AutoFixture magic on internal interfaces
