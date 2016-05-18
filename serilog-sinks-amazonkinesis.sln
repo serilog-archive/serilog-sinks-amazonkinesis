@@ -25,6 +25,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{89B05B
 		src\Serilog.Sinks.AmazonKinesis.nuspec = src\Serilog.Sinks.AmazonKinesis.nuspec
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.Amazon.Kinesis.Tests", "tests\Serilog.Sinks.Amazon.Kinesis.Tests\Serilog.Sinks.Amazon.Kinesis.Tests.csproj", "{B26D2F37-234B-438D-84BE-83BF9E0A255C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1310E4CF-DE62-4661-9E62-D1CE08A913B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,10 @@ Global
 		{9CDDC147-93BB-47DC-899C-B41384D7AE23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CDDC147-93BB-47DC-899C-B41384D7AE23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CDDC147-93BB-47DC-899C-B41384D7AE23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B26D2F37-234B-438D-84BE-83BF9E0A255C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B26D2F37-234B-438D-84BE-83BF9E0A255C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B26D2F37-234B-438D-84BE-83BF9E0A255C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B26D2F37-234B-438D-84BE-83BF9E0A255C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,5 +54,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{6672FF6B-5243-4588-986A-EEA9C0BD6C0B} = {543E1315-71DE-40CE-A179-4B27B7A64125}
 		{9CDDC147-93BB-47DC-899C-B41384D7AE23} = {037440DE-440B-4129-9F7A-09B42D00397E}
+		{B26D2F37-234B-438D-84BE-83BF9E0A255C} = {1310E4CF-DE62-4661-9E62-D1CE08A913B2}
 	EndGlobalSection
 EndGlobal
