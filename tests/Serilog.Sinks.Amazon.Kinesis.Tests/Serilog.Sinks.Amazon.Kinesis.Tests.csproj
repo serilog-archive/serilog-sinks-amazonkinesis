@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B26D2F37-234B-438D-84BE-83BF9E0A255C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Serilog.Sinks.Amazon.Kinesis.Tests</RootNamespace>
+    <AssemblyName>Serilog.Sinks.Amazon.Kinesis.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AWSSDK.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\AWSSDK.Core.3.1.5.3\lib\net35\AWSSDK.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AWSSDK.Kinesis, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\AWSSDK.Kinesis.3.1.3.0\lib\net35\AWSSDK.Kinesis.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AWSSDK.KinesisFirehose, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\AWSSDK.KinesisFirehose.3.1.0.2\lib\net35\AWSSDK.KinesisFirehose.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Moq, Version=4.2.1510.2205, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ploeh.AutoFixture, Version=3.45.3.0, Culture=neutral, PublicKeyToken=b24654c590009d4f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\AutoFixture.3.45.3\lib\net40\Ploeh.AutoFixture.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ploeh.AutoFixture.AutoMoq, Version=3.45.3.0, Culture=neutral, PublicKeyToken=b24654c590009d4f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\AutoFixture.AutoMoq.3.45.3\lib\net40\Ploeh.AutoFixture.AutoMoq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Serilog.1.5.14\lib\net40\Serilog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Serilog.FullNetFx, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Serilog.1.5.14\lib\net40\Serilog.FullNetFx.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Shouldly, Version=2.7.0.0, Culture=neutral, PublicKeyToken=6042cbcb05cbc941, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Shouldly.2.7.0\lib\net40\Shouldly.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="HttpLogShipperTests\HttpLogShipperBaseTestBase.cs" />
+    <Compile Include="HttpLogShipperTests\LogSendErrorEventTests.cs" />
+    <Compile Include="HttpLogShipperTests\LogShipperSUT.cs" />
+    <Compile Include="HttpLogShipperTests\WhenBookmarkCannotBeCreated.cs" />
+    <Compile Include="HttpLogShipperTests\WhenLogFilesFound.cs" />
+    <Compile Include="HttpLogShipperTests\WhenNoLogFilesFound.cs" />
+    <Compile Include="Integration\DurableKinesisFirehoseSinkTests\DurableKinesisFirehoseSinkTestBase.cs" />
+    <Compile Include="Integration\DurableKinesisFirehoseSinkTests\WhenLogAndWaitEnough.cs" />
+    <Compile Include="Integration\DurableKinesisSinkTests\DurableKinesisSinkTestBase.cs" />
+    <Compile Include="Integration\DurableKinesisSinkTests\WhenLogAndWaitEnough.cs" />
+    <Compile Include="LogReaderTests\LogReaderTestBase.cs" />
+    <Compile Include="LogReaderTests\WhenLogFileExists.cs" />
+    <Compile Include="LogReaderTests\WhenNoLogFileExists.cs" />
+    <Compile Include="LogShipperFileManagerTests\FileTestBase.cs" />
+    <Compile Include="LogShipperFileManagerTests\WhenGetFileLengthExclusiveAccess.cs" />
+    <Compile Include="LogShipperFileManagerTests\WhenLockAndDeleteFile.cs" />
+    <Compile Include="PersistedBookmarkTests\PersistedBookmarkTestBase.cs" />
+    <Compile Include="PersistedBookmarkTests\WhenPositionIsUpdated.cs" />
+    <Compile Include="PersistedBookmarkTests\WhenFileNameAndPositionAreUpdated.cs" />
+    <Compile Include="PersistedBookmarkTests\WhenBookmarkExistsAndContainsGarbage.cs" />
+    <Compile Include="PersistedBookmarkTests\WhenNoBookmarkExists.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestFixtureCategory.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Serilog.Sinks.Amazon.Kinesis\Serilog.Sinks.Amazon.Kinesis.csproj">
+      <Project>{9cddc147-93bb-47dc-899c-b41384d7ae23}</Project>
+      <Name>Serilog.Sinks.Amazon.Kinesis</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\AWSSDK.Kinesis.3.1.3.0\analyzers\dotnet\cs\AWSSDK.Kinesis.CodeAnalysis.dll" />
+    <Analyzer Include="..\..\packages\AWSSDK.KinesisFirehose.3.1.0.2\analyzers\dotnet\cs\AWSSDK.KinesisFirehose.CodeAnalysis.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

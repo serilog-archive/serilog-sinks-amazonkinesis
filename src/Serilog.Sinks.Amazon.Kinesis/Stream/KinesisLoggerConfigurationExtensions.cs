@@ -18,7 +18,6 @@ using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Amazon.Kinesis;
-using Serilog.Sinks.Amazon.Kinesis.Stream;
 using Serilog.Sinks.Amazon.Kinesis.Stream.Sinks;
 
 namespace Serilog
@@ -64,7 +63,6 @@ namespace Serilog
         /// <param name="loggerConfiguration">The logger configuration.</param>
         /// <param name="kinesisClient"></param>
         /// <param name="streamName"></param>
-        /// <param name="shardCount"></param>
         /// <param name="bufferBaseFilename"></param>
         /// <param name="bufferFileSizeLimitBytes"></param>
         /// <param name="batchPostingLimit"></param>
@@ -77,7 +75,6 @@ namespace Serilog
             this LoggerSinkConfiguration loggerConfiguration,
             IAmazonKinesis kinesisClient,
             string streamName,
-            int? shardCount = null,
             string bufferBaseFilename = null,
             int? bufferFileSizeLimitBytes = null,
             int? batchPostingLimit = null,
@@ -87,7 +84,7 @@ namespace Serilog
         {
             if (streamName == null) throw new ArgumentNullException("streamName");
 
-            var options = new KinesisStreamSinkOptions(streamName: streamName, shardCount: shardCount)
+            var options = new KinesisStreamSinkOptions(streamName: streamName)
             {
                 BufferFileSizeLimitBytes = bufferFileSizeLimitBytes,
                 BufferBaseFilename = bufferBaseFilename,

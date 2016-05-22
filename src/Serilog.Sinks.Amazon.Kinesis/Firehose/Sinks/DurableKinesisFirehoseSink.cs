@@ -20,10 +20,11 @@ using Serilog.Sinks.RollingFile;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
 {
-    class DurableKinesisFirehoseSink : ILogEventSink, IDisposable
+    sealed class DurableKinesisFirehoseSink : ILogEventSink, IDisposable
     {
         readonly HttpLogShipper _shipper;
         readonly RollingFileSink _sink;
+        EventHandler<LogSendErrorEventArgs> _logSendErrorHandler;
 
         public DurableKinesisFirehoseSink(KinesisFirehoseSinkOptions options, IAmazonKinesisFirehose kinesisFirehoseClient)
         {
@@ -42,20 +43,29 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
 
             _shipper = new HttpLogShipper(state);
 
-            if (options.OnLogSendError != null) {
-                _shipper.LogSendError += options.OnLogSendError;
+            _logSendErrorHandler = options.OnLogSendError;
+            if (_logSendErrorHandler != null)
+            {
+                _shipper.LogSendError += _logSendErrorHandler;
             }
         }
 
         public void Emit(LogEvent logEvent)
         {
             _sink.Emit(logEvent);
+            _shipper.Emit();
         }
 
         public void Dispose()
         {
             _sink.Dispose();
             _shipper.Dispose();
+
+            if (_logSendErrorHandler != null)
+            {
+                _shipper.LogSendError -= _logSendErrorHandler;
+                _logSendErrorHandler = null;
+            }
         }
     }
 }

@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.IO;
 using Amazon.KinesisFirehose;
 using Amazon.KinesisFirehose.Model;
+using Primitives;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 using Serilog.Sinks.Amazon.Kinesis.Logging;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
@@ -23,17 +25,33 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
     internal class HttpLogShipper : HttpLogShipperBase<Record, PutRecordBatchResponse>
     {
         readonly IAmazonKinesisFirehose _kinesisFirehoseClient;
+        readonly Throttle _throttle;
 
-        public HttpLogShipper(KinesisSinkState state) : base(state)
+        public HttpLogShipper(KinesisSinkState state) : base(state.Options,
+            new LogReaderFactory(),
+            new PersistedBookmarkFactory(),
+            new LogShipperFileManager()
+            )
         {
+            _throttle = new Throttle(ShipLogs, state.Options.Period);
             _kinesisFirehoseClient = state.KinesisFirehoseClient;
         }
 
-        protected override Record PrepareRecord(byte[] bytes)
+        public void Emit()
+        {
+            _throttle.ThrottleAction();
+        }
+
+        public void Dispose()
+        {
+            _throttle.Dispose();
+        }
+
+        protected override Record PrepareRecord(MemoryStream stream)
         {
             return new Record
             {
-                Data = new MemoryStream(bytes)
+                Data = stream
             };
         }
 

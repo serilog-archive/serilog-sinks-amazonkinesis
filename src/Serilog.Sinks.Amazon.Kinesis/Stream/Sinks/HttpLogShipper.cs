@@ -17,25 +17,43 @@ using System.Collections.Generic;
 using System.IO;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
+using Primitives;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 using Serilog.Sinks.Amazon.Kinesis.Logging;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 {
-    internal class HttpLogShipper : HttpLogShipperBase<PutRecordsRequestEntry, PutRecordsResponse>
+    sealed class HttpLogShipper : HttpLogShipperBase<PutRecordsRequestEntry, PutRecordsResponse>, IDisposable
     {
         readonly IAmazonKinesis _kinesisClient;
+        readonly Throttle _throttle;
 
-        public HttpLogShipper(KinesisSinkState state) : base(state)
+        public HttpLogShipper(KinesisSinkState state) : base(state.Options,
+            new LogReaderFactory(),
+            new PersistedBookmarkFactory(),
+            new LogShipperFileManager()
+            )
         {
+            _throttle = new Throttle(ShipLogs, state.Options.Period);
             _kinesisClient = state.KinesisClient;
         }
 
-        protected override PutRecordsRequestEntry PrepareRecord(byte[] bytes)
+        public void Emit()
+        {
+            _throttle.ThrottleAction();
+        }
+
+        public void Dispose()
+        {
+            _throttle.Dispose();
+        }
+
+        protected override PutRecordsRequestEntry PrepareRecord(MemoryStream stream)
         {
             return new PutRecordsRequestEntry
             {
                 PartitionKey = Guid.NewGuid().ToString(),
-                Data = new MemoryStream(bytes)
+                Data = stream
             };
         }
 
