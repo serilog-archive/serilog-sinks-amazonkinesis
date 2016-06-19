@@ -23,7 +23,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
         /// </summary>
         public string BufferBaseFilename
         {
-            get { return _bufferBaseFilename + BufferBaseFilenameAppend; }
+            get { return string.IsNullOrEmpty(_bufferBaseFilename) ? null : _bufferBaseFilename + BufferBaseFilenameAppend; }
             set { _bufferBaseFilename = value; }
         }
 
