@@ -35,7 +35,6 @@ if (streamOk)
     loggerConfig.WriteTo.AmazonKinesis(
         kinesisClient: client,
         streamName: streamName,
-        shardCount: shardCount,
         period: TimeSpan.FromSeconds(2),
         bufferLogShippingInterval: TimeSpan.FromSeconds(5),
         bufferBaseFilename: "./logs/kinesis-buffer"
