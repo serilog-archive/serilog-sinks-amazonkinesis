@@ -24,13 +24,5 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
         /// </summary>
         /// <param name="streamName">The name of the Kinesis stream.</param>
         public KinesisFirehoseSinkOptions(string streamName) : base(streamName) {}
-
-        /// <summary>
-        ///     Will be appended to buffer base filenames.
-        /// </summary>
-        public override string BufferBaseFilenameAppend
-        {
-            get { return ".firehose"; }
-        }
     }
 }

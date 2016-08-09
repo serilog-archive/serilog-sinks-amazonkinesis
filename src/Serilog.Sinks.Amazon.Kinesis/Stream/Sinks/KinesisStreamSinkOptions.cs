@@ -26,13 +26,5 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
         public KinesisStreamSinkOptions(string streamName) : base(streamName)
         {
         }
-
-        /// <summary>
-        ///     Will be appended to buffer base filenames.
-        /// </summary>
-        public override string BufferBaseFilenameAppend
-        {
-            get { return ".stream"; }
-        }
     }
 }

@@ -21,16 +21,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
         /// <summary>
         /// Optional path to directory that can be used as a log shipping buffer for increasing the reliabilty of the log forwarding.
         /// </summary>
-        public string BufferBaseFilename
-        {
-            get { return string.IsNullOrEmpty(_bufferBaseFilename) ? null : _bufferBaseFilename + BufferBaseFilenameAppend; }
-            set { _bufferBaseFilename = value; }
-        }
-
-        /// <summary>
-        /// Will be appended to buffer base filenames.
-        /// </summary>
-        public abstract string BufferBaseFilenameAppend { get; }
+        public string BufferBaseFilename { get; set; }
 
         /// <summary>
         /// The default time to wait between checking for event batches. Defaults to 2 seconds.
@@ -40,9 +31,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
         /// <summary>
         /// The default maximum number of events to post in a single batch. Defaults to 500.
         /// </summary>
-        public static int DefaultBatchPostingLimit = 500;
-
-        string _bufferBaseFilename;
+        public static readonly int DefaultBatchPostingLimit = 500;
 
         /// <summary>
         /// The default stream name to use for the log events.

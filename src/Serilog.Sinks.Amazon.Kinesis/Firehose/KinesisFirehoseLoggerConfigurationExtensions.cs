@@ -88,9 +88,9 @@ namespace Serilog
             var options = new KinesisFirehoseSinkOptions(streamName)
             {
                 BufferFileSizeLimitBytes = bufferFileSizeLimitBytes,
-                BufferBaseFilename = bufferBaseFilename,
-                Period = period ?? KinesisFirehoseSinkOptions.DefaultPeriod,
-                BatchPostingLimit = batchPostingLimit ?? KinesisFirehoseSinkOptions.DefaultBatchPostingLimit,
+                BufferBaseFilename = bufferBaseFilename == null ? null : bufferBaseFilename + ".firehose",
+                Period = period ?? KinesisSinkOptionsBase.DefaultPeriod,
+                BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptionsBase.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
                 OnLogSendError = onLogSendError
             };
