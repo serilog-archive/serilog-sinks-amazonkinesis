@@ -20,7 +20,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
         public static PersistedBookmark Create(string bookmarkFileName)
         {
-            var stream = File.Open(bookmarkFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+            var stream = System.IO.File.Open(bookmarkFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
             try
             {
                 var bookmark = new PersistedBookmark(stream);

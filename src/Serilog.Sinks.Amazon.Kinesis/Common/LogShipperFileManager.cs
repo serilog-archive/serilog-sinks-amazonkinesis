@@ -6,7 +6,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Common
     {
         public long GetFileLengthExclusiveAccess(string filePath)
         {
-            using (var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var fileStream = System.IO.File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 return fileStream.Length;
             }

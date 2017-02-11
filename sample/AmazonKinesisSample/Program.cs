@@ -23,7 +23,7 @@ namespace AmazonKinesisSample
 
         public static void Main()
         {
-            SelfLog.Out = Console.Out;
+            SelfLog.Enable(Console.Out);
 
             var client = new AmazonKinesisClient();
 
