@@ -1,14 +1,7 @@
 version: '{build}'
 build_script:
 - ps: >-
-    $version = $env:APPVEYOR_REPO_TAG_NAME
-
-    if (-not $version) {
-
-    $version = "2.0"
-
-    }
-
+    $version = "2.2"
     ./Build.ps1 -majorMinor "$version" -patch "$env:APPVEYOR_BUILD_VERSION" -customLogger "C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 artifacts:
 - path: Serilog.*.nupkg
