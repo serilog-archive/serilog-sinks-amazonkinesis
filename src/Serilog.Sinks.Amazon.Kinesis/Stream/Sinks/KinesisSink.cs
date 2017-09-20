@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
 using Serilog.Events;
@@ -43,6 +44,12 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 
             _minimumAcceptedLevel = _state.Options.MinimumLogEventLevel;
         }
+
+        ~KinesisSink()
+        {
+            Dispose(true);
+        }
+
 
         /// <summary>
         /// Free resources held by the sink.
@@ -86,8 +93,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 
                 request.Records.Add(entry);
             }
-
-            _state.KinesisClient.PutRecords(request);
+            var task = Task.Run<PutRecordsResponse>(async () => await _state.KinesisClient.PutRecordsAsync(request));
+            task.Wait();
         }
 
 

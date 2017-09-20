@@ -1,6 +1,6 @@
 using System;
 
-namespace Serilog.Sinks.Amazon.Kinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Common
 {
     interface IPersistedBookmark : IDisposable
     {

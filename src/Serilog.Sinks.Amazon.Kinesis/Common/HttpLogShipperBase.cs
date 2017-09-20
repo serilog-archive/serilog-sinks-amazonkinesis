@@ -2,15 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Serilog.Sinks.Amazon.Kinesis.Common;
-using Serilog.Sinks.Amazon.Kinesis.Logging;
+using Serilog.Debugging;
 
-namespace Serilog.Sinks.Amazon.Kinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Common
 {
     abstract class HttpLogShipperBase<TRecord, TResponse>
     {
-        protected ILog Logger { get; }
-
         private readonly ILogReaderFactory _logReaderFactory;
         private readonly IPersistedBookmarkFactory _persistedBookmarkFactory;
         private readonly ILogShipperFileManager _fileManager;
@@ -33,8 +30,6 @@ namespace Serilog.Sinks.Amazon.Kinesis
             if (persistedBookmarkFactory == null) throw new ArgumentNullException(nameof(persistedBookmarkFactory));
             if (fileManager == null) throw new ArgumentNullException(nameof(fileManager));
 
-            Logger = LogProvider.GetLogger(GetType());
-
             _logReaderFactory = logReaderFactory;
             _persistedBookmarkFactory = persistedBookmarkFactory;
             _fileManager = fileManager;
@@ -45,8 +40,6 @@ namespace Serilog.Sinks.Amazon.Kinesis
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
             _candidateSearchPath = Path.GetFileName(options.BufferBaseFilename) + "*.json";
 
-            Logger.InfoFormat("Candidate search path is {0}", _candidateSearchPath);
-            Logger.InfoFormat("Log folder is {0}", _logFolder);
         }
 
 
@@ -72,7 +65,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
             catch (IOException ex)
             {
-                Logger.TraceException("Bookmark cannot be opened.", ex);
+                SelfLog.WriteLine("Bookmark cannot be opened.", ex);
                 return null;
             }
         }
@@ -94,11 +87,11 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
             catch (IOException ex)
             {
-                Logger.WarnException("Error shipping logs", ex);
+                SelfLog.WriteLine("Error shipping logs", ex);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error shipping logs", ex);
+                SelfLog.WriteLine("Error shipping logs", ex);
                 OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream", _streamName), ex));
             }
         }
@@ -109,20 +102,20 @@ namespace Serilog.Sinks.Amazon.Kinesis
             {
                 string currentFilePath = bookmark.FileName;
 
-                Logger.TraceFormat("Bookmark is currently at offset {0} in '{1}'", bookmark.Position, currentFilePath);
+                SelfLog.WriteLine("Bookmark is currently at offset {0} in '{1}'", bookmark.Position, currentFilePath);
 
                 var fileSet = GetFileSet();
 
                 if (currentFilePath == null)
                 {
                     currentFilePath = fileSet.FirstOrDefault();
-                    Logger.InfoFormat("New log file is {0}", currentFilePath);
+                    SelfLog.WriteLine("New log file is {0}", currentFilePath);
                     bookmark.UpdateFileNameAndPosition(currentFilePath, 0L);
                 }
                 else if (fileSet.All(f => CompareFileNames(f, currentFilePath) != 0))
                 {
                     currentFilePath = fileSet.FirstOrDefault(f => CompareFileNames(f, currentFilePath) >= 0);
-                    Logger.InfoFormat("New log file is {0}", currentFilePath);
+                    SelfLog.WriteLine("New log file is {0}", currentFilePath);
                     bookmark.UpdateFileNameAndPosition(currentFilePath, 0L);
                 }
 
@@ -144,7 +137,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
                 if (currentFilePath == null)
                 {
-                    Logger.InfoFormat("No log file is found. Nothing to do.");
+                    SelfLog.WriteLine("No log file is found. Nothing to do.");
                     break;
                 }
 
@@ -166,7 +159,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
                         if (!successful)
                         {
-                            Logger.ErrorFormat("SendRecords failed for {0} records.", records.Count);
+                            SelfLog.WriteLine("SendRecords failed for {0} records.", records.Count);
                             HandleError(response, records.Count);
                             return;
                         }
@@ -175,13 +168,13 @@ namespace Serilog.Sinks.Amazon.Kinesis
                     var newPosition = batch.Item1;
                     if (initialPosition < newPosition)
                     {
-                        Logger.TraceFormat("Advancing bookmark from {0} to {1} on {2}", initialPosition, newPosition, currentFilePath);
+                        SelfLog.WriteLine("Advancing bookmark from {0} to {1} on {2}", initialPosition, newPosition, currentFilePath);
                         bookmark.UpdatePosition(newPosition);
                     }
                     else if (initialPosition > newPosition)
                     {
                         newPosition = 0;
-                        Logger.WarnFormat("File {2} has been truncated or re-created, bookmark reset from {0} to {1}", initialPosition, newPosition, currentFilePath);
+                        SelfLog.WriteLine("File {2} has been truncated or re-created, bookmark reset from {0} to {1}", initialPosition, newPosition, currentFilePath);
                         bookmark.UpdatePosition(newPosition);
                     }
 
@@ -189,18 +182,18 @@ namespace Serilog.Sinks.Amazon.Kinesis
 
                 if (initialPosition == bookmark.Position)
                 {
-                    Logger.TraceFormat("Found no records to process");
+                    SelfLog.WriteLine("Found no records to process");
 
                     // Only advance the bookmark if there is next file in the queue 
                     // and no other process has the current file locked, and its length is as we found it.
 
                     if (fileSet.Length > 1)
                     {
-                        Logger.TraceFormat("BufferedFilesCount: {0}; checking if can advance to the next file", fileSet.Length);
+                        SelfLog.WriteLine("BufferedFilesCount: {0}; checking if can advance to the next file", fileSet.Length);
                         var weAreAtEndOfTheFileAndItIsNotLockedByAnotherThread = WeAreAtEndOfTheFileAndItIsNotLockedByAnotherThread(currentFilePath, bookmark.Position);
                         if (weAreAtEndOfTheFileAndItIsNotLockedByAnotherThread)
                         {
-                            Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
+                            SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
                             bookmark.UpdateFileNameAndPosition(fileSet[1], 0);
                         }
                         else
@@ -210,7 +203,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
                     }
                     else
                     {
-                        Logger.TraceFormat("This is a single log file, and we are in the end of it. Nothing to do.");
+                        SelfLog.WriteLine("This is a single log file, and we are in the end of it. Nothing to do.");
                         break;
                     }
                 }
@@ -244,12 +237,12 @@ namespace Serilog.Sinks.Amazon.Kinesis
             try
             {
                 _fileManager.LockAndDeleteFile(fileToDelete);
-                Logger.InfoFormat("Log file deleted: {0}", fileToDelete);
+                SelfLog.WriteLine("Log file deleted: {0}", fileToDelete);
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.WarnException("Exception deleting file: {0}", ex, fileToDelete);
+                SelfLog.WriteLine("Exception deleting file: {0}", ex, fileToDelete);
                 return false;
             }
         }
@@ -262,11 +255,11 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
             catch (IOException ex)
             {
-                Logger.TraceException("Swallowed I/O exception while testing locked status of {0}", ex, file);
+                SelfLog.WriteLine("Swallowed I/O exception while testing locked status of {0}", ex, file);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Unexpected exception while testing locked status of {0}", ex, file);
+                SelfLog.WriteLine("Unexpected exception while testing locked status of {0}", ex, file);
             }
 
             return false;
@@ -278,7 +271,7 @@ namespace Serilog.Sinks.Amazon.Kinesis
                 .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
-            Logger.TraceFormat("FileSet contains: {0}", string.Join(";", fileSet));
+            SelfLog.WriteLine("FileSet contains: {0}", string.Join(";", fileSet));
             return fileSet;
         }
 

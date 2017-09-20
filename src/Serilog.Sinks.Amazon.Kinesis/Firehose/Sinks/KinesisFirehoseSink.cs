@@ -63,7 +63,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
         /// Emit a batch of log events, running to completion asynchronously.
         /// </summary>
         /// <param name="events">The events to be logged to Kinesis Firehose</param>
-        protected override void EmitBatch(IEnumerable<LogEvent> events)
+        protected override async void EmitBatch(IEnumerable<LogEvent> events)
         {
             var request = new PutRecordBatchRequest
             {
@@ -85,7 +85,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
                 request.Records.Add(entry);
             }
 
-            _state.KinesisFirehoseClient.PutRecordBatch(request);
+            var response = _state.KinesisFirehoseClient.PutRecordBatchAsync(request).Result;
         }
 
 

@@ -17,10 +17,11 @@ using Amazon.KinesisFirehose;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Sinks.Amazon.Kinesis;
+using Serilog.Formatting;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 using Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks;
 
-namespace Serilog
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 {
     /// <summary>
     /// Adds the WriteTo.AmazonKinesisFirehose() extension method to <see cref="LoggerConfiguration"/>.
@@ -79,6 +80,7 @@ namespace Serilog
             int? bufferFileSizeLimitBytes = null,
             int? batchPostingLimit = null,
             TimeSpan? period = null,
+            ITextFormatter customFormatter = null,
             LogEventLevel? minimumLogEventLevel = null,
             EventHandler<LogSendErrorEventArgs> onLogSendError = null)
         {
@@ -92,7 +94,8 @@ namespace Serilog
                 Period = period ?? KinesisSinkOptionsBase.DefaultPeriod,
                 BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptionsBase.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
-                OnLogSendError = onLogSendError
+                OnLogSendError = onLogSendError,
+                CustomDurableFormatter = customFormatter
             };
 
             return AmazonKinesisFirehose(loggerConfiguration, options, kinesisFirehoseClient);

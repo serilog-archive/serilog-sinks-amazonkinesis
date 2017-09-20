@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace Serilog.Sinks.Amazon.Kinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Common
 {
     class PersistedBookmark : IPersistedBookmark
     {

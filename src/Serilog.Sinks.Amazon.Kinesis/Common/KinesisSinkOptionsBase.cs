@@ -2,7 +2,7 @@ using System;
 using Serilog.Events;
 using Serilog.Formatting;
 
-namespace Serilog.Sinks.Amazon.Kinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Common
 {
     /// <summary>
     /// 

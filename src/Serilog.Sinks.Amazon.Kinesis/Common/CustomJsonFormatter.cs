@@ -2,7 +2,7 @@
 using System.IO;
 using Serilog.Formatting.Json;
 
-namespace Serilog.Sinks.Amazon.Kinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Common
 {
     /// <summary>
     /// wut

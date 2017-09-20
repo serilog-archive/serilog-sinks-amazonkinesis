@@ -16,6 +16,7 @@ using System;
 using Amazon.Kinesis;
 using Serilog.Core;
 using Serilog.Events;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 using Serilog.Sinks.RollingFile;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
