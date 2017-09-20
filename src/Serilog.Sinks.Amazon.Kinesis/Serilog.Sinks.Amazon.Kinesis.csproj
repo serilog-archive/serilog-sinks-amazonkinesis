@@ -5,7 +5,7 @@
 
   <PropertyGroup>
     <Description>The periodic batching sink for Serilog</Description>
-    <VersionPrefix>2.2.0</VersionPrefix>
+    <PackageVersion>2.2.0</PackageVersion>
     <Authors>Serilog Contributors</Authors>
     <TargetFrameworks>netcoreapp2.0;netstandard1.3;netstandard1.4;netstandard1.5</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
