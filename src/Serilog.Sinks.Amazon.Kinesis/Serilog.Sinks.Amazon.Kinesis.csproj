@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.4</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -9,17 +9,17 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>The Amazon Kinesis sink for Serilog</Description>
+    <Description>The periodic batching sink for Serilog</Description>
     <VersionPrefix>2.2.0</VersionPrefix>
-    <Authors>Jake Scott, Justin Thirkell, Alexander Savchuk, Troy Larson</Authors>
-    <TargetFrameworks>netstandard1.3;netstandard1.4;netstandard1.5</TargetFrameworks>
+    <Authors>Serilog Contributors</Authors>
+    <TargetFrameworks>netcoreapp2.0;netstandard1.3;netstandard1.4;netstandard1.5</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Serilog.Sinks.AmazonKinesis</AssemblyName>
     <AssemblyOriginatorKeyFile>assets/Serilog.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Serilog.Sinks.AmazonKinesis</PackageId>
-    <PackageTags>serilog;kinesis;aws;amazon;logging</PackageTags>
+    <PackageTags>serilog;kinesis</PackageTags>
     <PackageIconUrl>http://serilog.net/images/serilog-sink-nuget.png</PackageIconUrl>
     <PackageProjectUrl>http://serilog.net</PackageProjectUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
@@ -27,10 +27,10 @@
     <RepositoryType>git</RepositoryType>
     <!-- Don't reference the full NETStandard.Library -->
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net45|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;LIBLOG_PORTABLE</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.4' ">
@@ -44,14 +44,11 @@
     <PackageReference Include="AWSSDK.Core" Version="3.3.17.9" />
     <PackageReference Include="AWSSDK.Kinesis" Version="3.3.3" />
     <PackageReference Include="AWSSDK.KinesisFirehose" Version="3.3.2" />
-    <PackageReference Include="Hangfire" Version="1.6.17" />
-    <PackageReference Include="LibLog" Version="4.2.6" />
     <PackageReference Include="Serilog" Version="2.5.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="3.2.0" />
     <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="2.1.1" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
     <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
-    <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />
   </ItemGroup>
 
