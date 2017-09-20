@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard1.5</TargetFramework>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -12,7 +12,7 @@
     <Description>The Amazon Kinesis sink for Serilog</Description>
     <VersionPrefix>2.2.0</VersionPrefix>
     <Authors>Jake Scott, Justin Thirkell, Alexander Savchuk, Troy Larson</Authors>
-    <TargetFrameworks>netcoreapp2.0;netstandard1.3;netstandard1.4;netstandard1.5</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard1.4;netstandard1.5</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Serilog.Sinks.AmazonKinesis</AssemblyName>
     <AssemblyOriginatorKeyFile>assets/Serilog.snk</AssemblyOriginatorKeyFile>
