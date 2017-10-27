@@ -65,9 +65,9 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
             };
 
             SelfLog.WriteLine("Writing {0} records to firehose", records.Count);
-            var putRecordBatchTask = Task.Run(async () => await _kinesisFirehoseClient.PutRecordBatchAsync(request));
+            var putRecordBatchTask = _kinesisFirehoseClient.PutRecordBatchAsync(request);
 
-            successful = putRecordBatchTask.Result.FailedPutCount == 0;
+            successful = putRecordBatchTask.GetAwaiter().GetResult().FailedPutCount == 0;
             return putRecordBatchTask.Result;
         }
 

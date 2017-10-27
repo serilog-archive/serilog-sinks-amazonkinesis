@@ -15,6 +15,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Amazon.KinesisFirehose;
 using Amazon.KinesisFirehose.Model;
 using Serilog.Events;
@@ -63,7 +64,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
         /// Emit a batch of log events, running to completion asynchronously.
         /// </summary>
         /// <param name="events">The events to be logged to Kinesis Firehose</param>
-        protected override async void EmitBatch(IEnumerable<LogEvent> events)
+        protected override Task EmitBatchAsync(IEnumerable<LogEvent> events)
         {
             var request = new PutRecordBatchRequest
             {
@@ -85,7 +86,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
                 request.Records.Add(entry);
             }
 
-            var response = _state.KinesisFirehoseClient.PutRecordBatchAsync(request).Result;
+            return _state.KinesisFirehoseClient.PutRecordBatchAsync(request);
         }
 
 
