@@ -67,9 +67,9 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
             };
 
             SelfLog.WriteLine("Writing {0} records to kinesis", records.Count);
-            var putRecordBatchTask = Task.Run(async () => await _kinesisClient.PutRecordsAsync(request));
+            var putRecordBatchTask = _kinesisClient.PutRecordsAsync(request);
 
-            successful = putRecordBatchTask.Result.FailedRecordCount == 0;
+            successful = putRecordBatchTask.GetAwaiter().GetResult().FailedRecordCount == 0;
             return putRecordBatchTask.Result;
         }
 

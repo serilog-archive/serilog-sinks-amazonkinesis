@@ -50,28 +50,11 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
             Dispose(true);
         }
 
-
-        /// <summary>
-        /// Free resources held by the sink.
-        /// </summary>
-        /// <param name="disposing">If true, called because the object is being disposed; if false, 
-        /// the object is being disposed from the finalizer.</param>
-        protected override void Dispose(bool disposing)
-        {
-            // First flush the buffer
-            base.Dispose(disposing);
-
-            if (disposing)
-            {
-                _state.KinesisClient.Dispose();
-            }
-        }
-
         /// <summary>
         /// Emit a batch of log events, running to completion asynchronously.
         /// </summary>
         /// <param name="events">The events to be logged to Kinesis</param>
-        protected override void EmitBatch(IEnumerable<LogEvent> events)
+        protected override Task EmitBatchAsync(IEnumerable<LogEvent> events)
         {
             var request = new PutRecordsRequest
             {
@@ -93,8 +76,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 
                 request.Records.Add(entry);
             }
-            var task = Task.Run<PutRecordsResponse>(async () => await _state.KinesisClient.PutRecordsAsync(request));
-            task.Wait();
+            return _state.KinesisClient.PutRecordsAsync(request);
         }
 
 
