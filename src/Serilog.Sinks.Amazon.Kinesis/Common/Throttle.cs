@@ -27,6 +27,11 @@ namespace Serilog.Sinks.Amazon.Kinesis.Common
             _throttling = THROTTLING_FREE;
         }
 
+        public void Flush()
+        {
+            FireTimer();
+        }
+
         private void FireTimer()
         {
             lock (_lockObj)

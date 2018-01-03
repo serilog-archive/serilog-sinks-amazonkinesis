@@ -17,7 +17,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisSinkTests
             GivenKinesisClient();
             WhenLoggerCreated();
 
-            var messages = Fixture.CreateMany<string>(100).ToList();
+            var messages = Fixture.CreateMany<string>(2).ToList();
             foreach (var message in messages)
             {
                 Logger.Information(message);

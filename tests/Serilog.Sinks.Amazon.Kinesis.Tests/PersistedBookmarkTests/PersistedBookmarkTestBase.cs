@@ -2,6 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using NUnit.Framework;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Tests.PersistedBookmarkTests
 {

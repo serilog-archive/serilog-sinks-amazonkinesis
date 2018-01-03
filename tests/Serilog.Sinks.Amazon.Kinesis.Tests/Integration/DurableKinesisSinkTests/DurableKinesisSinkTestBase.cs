@@ -6,6 +6,8 @@ using Amazon.Kinesis.Model;
 using Moq;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
+using Serilog.Sinks.Amazon.Kinesis.Common;
+using Serilog.Sinks.Amazon.Kinesis.Stream;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisSinkTests
 {
