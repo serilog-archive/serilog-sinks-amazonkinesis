@@ -44,6 +44,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
 
         public void Dispose()
         {
+            _throttle.Flush();
             _throttle.Stop();
             _throttle.Dispose();
         }

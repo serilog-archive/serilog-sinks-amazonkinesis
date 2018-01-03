@@ -74,7 +74,6 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisFirehoseS
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
-            ((IDisposable)Logger)?.Dispose();
             Directory.Delete(LogPath, true);
             DataSent?.Dispose();
         }

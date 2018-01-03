@@ -1,11 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
 using Moq;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
+using Serilog.Core;
 using Serilog.Sinks.Amazon.Kinesis.Common;
 using Serilog.Sinks.Amazon.Kinesis.Stream;
 
@@ -15,7 +18,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisSinkTests
     abstract class DurableKinesisSinkTestBase
     {
         protected Fixture Fixture { get; private set; }
-        protected ILogger Logger { get; private set; }
+        protected Logger Logger { get; private set; }
         protected IAmazonKinesis Client { get { return ClientMock.Object; } }
         protected Mock<IAmazonKinesis> ClientMock { get; private set; }
         protected EventHandler<LogSendErrorEventArgs> OnLogSendError { get; private set; }
@@ -42,17 +45,13 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisSinkTests
         {
             ClientMock = new Mock<IAmazonKinesis>(MockBehavior.Loose);
             ClientMock.Setup(
-                x => x.PutRecords(It.IsAny<PutRecordsRequest>())
+                    x => x.PutRecordsAsync(It.IsAny<PutRecordsRequest>(), It.IsAny<CancellationToken>())
                 )
-                .Callback((PutRecordsRequest request) =>
+                .Callback((PutRecordsRequest request, CancellationToken token) =>
                 {
                     request.Records.ForEach(r => r.Data.WriteTo(DataSent));
                 })
-                .Returns((PutRecordsRequest request) => new PutRecordsResponse
-                {
-                    FailedRecordCount = 0,
-                    HttpStatusCode = HttpStatusCode.BadRequest
-                });
+                .Returns(Task.FromResult(new PutRecordsResponse() { FailedRecordCount = 0 }));
 
         }
 
@@ -76,7 +75,6 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisSinkTests
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
-            ((IDisposable)Logger)?.Dispose();
             Directory.Delete(LogPath, true);
             DataSent?.Dispose();
         }

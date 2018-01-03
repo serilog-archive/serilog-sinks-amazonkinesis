@@ -27,11 +27,6 @@ namespace Serilog.Sinks.Amazon.Kinesis.Common
             _throttling = THROTTLING_FREE;
         }
 
-        public void Flush()
-        {
-            FireTimer();
-        }
-
         private void FireTimer()
         {
             lock (_lockObj)
@@ -41,6 +36,11 @@ namespace Serilog.Sinks.Amazon.Kinesis.Common
                     _callback();
                 }
             }
+        }
+
+        public void Flush()
+        {
+            FireTimer();
         }
 
         public bool ThrottleAction()
@@ -71,6 +71,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Common
 
         public void Dispose()
         {
+            FireTimer();
             _timer.Dispose();
         }
     }

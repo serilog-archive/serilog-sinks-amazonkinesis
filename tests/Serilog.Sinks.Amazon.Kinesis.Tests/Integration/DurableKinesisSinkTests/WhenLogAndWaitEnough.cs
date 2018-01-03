@@ -17,7 +17,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisSinkTests
             GivenKinesisClient();
             WhenLoggerCreated();
 
-            var messages = Fixture.CreateMany<string>(2).ToList();
+            var messages = Fixture.CreateMany<string>(100).ToList();
             foreach (var message in messages)
             {
                 Logger.Information(message);
@@ -25,7 +25,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisSinkTests
             }
 
             Thread.Sleep(ThrottleTime.Add(ThrottleTime));
-
+            Logger.Dispose();
             DataSent.Position = 0;
             var data = new StreamReader(DataSent).ReadToEnd();
 
