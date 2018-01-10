@@ -22,8 +22,8 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net45" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net462" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net462" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net462" />
   </files>
 </package>
