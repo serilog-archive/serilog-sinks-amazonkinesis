@@ -2,7 +2,7 @@ version: '{build}'
 build_script:
 - ps: >-
     $version = "2.2"
-    $env:VisualStudioVersion=15.0
+    $env:VisualStudioVersion="15.0"
     $env:VSINSTALLDIR="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise"
     ./Build.ps1 -majorMinor "$version" -patch "$env:APPVEYOR_BUILD_VERSION" -customLogger "C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 artifacts:
