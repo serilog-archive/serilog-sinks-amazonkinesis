@@ -4,7 +4,9 @@ environment:
 build_script:
 - ps: >-
     $version = "2.2"
+    
     ./Build.ps1 -majorMinor "$version" -patch "$env:APPVEYOR_BUILD_VERSION" -customLogger "C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+
 artifacts:
 - path: Serilog.*.nupkg
 deploy:
