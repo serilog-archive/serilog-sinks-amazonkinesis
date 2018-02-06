@@ -9,7 +9,7 @@
     <Authors>Serilog Contributors</Authors>
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>Serilog.Sinks.AmazonKinesis</AssemblyName>
+    <AssemblyName>Serilog.Sinks.Amazon.Kinesis</AssemblyName>
     <AssemblyOriginatorKeyFile>assets/Serilog.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
