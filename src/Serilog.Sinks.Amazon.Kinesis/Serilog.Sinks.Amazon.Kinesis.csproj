@@ -7,7 +7,7 @@
     <Description>The periodic batching sink for Serilog</Description>
     <PackageVersion>2.2.0</PackageVersion>
     <Authors>Serilog Contributors</Authors>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard2.0;netstandard1.6</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Serilog.Sinks.Amazon.Kinesis</AssemblyName>
     <AssemblyOriginatorKeyFile>assets/Serilog.snk</AssemblyOriginatorKeyFile>
