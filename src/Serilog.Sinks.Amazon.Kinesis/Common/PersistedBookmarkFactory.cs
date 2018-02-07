@@ -1,4 +1,4 @@
-namespace Serilog.Sinks.Amazon.Kinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Common
 {
     class PersistedBookmarkFactory : IPersistedBookmarkFactory
     {

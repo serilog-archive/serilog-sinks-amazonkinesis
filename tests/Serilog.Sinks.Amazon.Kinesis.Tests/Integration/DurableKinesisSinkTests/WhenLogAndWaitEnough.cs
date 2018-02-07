@@ -25,7 +25,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisSinkTests
             }
 
             Thread.Sleep(ThrottleTime.Add(ThrottleTime));
-
+            Logger.Dispose();
             DataSent.Position = 0;
             var data = new StreamReader(DataSent).ReadToEnd();
 

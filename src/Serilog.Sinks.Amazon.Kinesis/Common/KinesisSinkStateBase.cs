@@ -1,7 +1,7 @@
 ﻿using System;
 using Serilog.Formatting;
 
-namespace Serilog.Sinks.Amazon.Kinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Common
 {
     abstract class KinesisSinkStateBase
     {

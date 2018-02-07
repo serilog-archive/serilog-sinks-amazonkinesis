@@ -15,11 +15,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
-using Primitives;
+using Serilog.Debugging;
 using Serilog.Sinks.Amazon.Kinesis.Common;
-using Serilog.Sinks.Amazon.Kinesis.Logging;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 {
@@ -45,6 +45,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 
         public void Dispose()
         {
+            _throttle.Flush();
+            _throttle.Stop();
             _throttle.Dispose();
         }
 
@@ -65,18 +67,18 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
                 Records = records
             };
 
-            Logger.TraceFormat("Writing {0} records to kinesis", records.Count);
-            var response = _kinesisClient.PutRecords(request);
+            SelfLog.WriteLine("Writing {0} records to kinesis", records.Count);
+            var putRecordBatchTask = _kinesisClient.PutRecordsAsync(request);
 
-            successful = response.FailedRecordCount == 0;
-            return response;
+            successful = putRecordBatchTask.GetAwaiter().GetResult().FailedRecordCount == 0;
+            return putRecordBatchTask.Result;
         }
 
         protected override void HandleError(PutRecordsResponse response, int originalRecordCount)
         {
             foreach (var record in response.Records)
             {
-                Logger.TraceFormat("Kinesis failed to index record in stream '{0}'. {1} {2} ", _streamName, record.ErrorCode, record.ErrorMessage);
+                SelfLog.WriteLine("Kinesis failed to index record in stream '{0}'. {1} {2} ", _streamName, record.ErrorCode, record.ErrorMessage);
             }
             // fire event
             OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _streamName, response.FailedRecordCount, originalRecordCount), null));

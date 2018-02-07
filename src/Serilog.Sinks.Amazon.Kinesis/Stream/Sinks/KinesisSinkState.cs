@@ -14,6 +14,7 @@
 
 using System;
 using Amazon.Kinesis;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 {

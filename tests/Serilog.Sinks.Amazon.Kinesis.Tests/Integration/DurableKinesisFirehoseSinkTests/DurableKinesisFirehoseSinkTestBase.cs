@@ -1,11 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.KinesisFirehose;
 using Amazon.KinesisFirehose.Model;
 using Moq;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
+using Serilog.Core;
+using Serilog.Sinks.Amazon.Kinesis.Common;
+using Serilog.Sinks.Amazon.Kinesis.Firehose;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisFirehoseSinkTests
 {
@@ -13,7 +18,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisFirehoseS
     abstract class DurableKinesisFirehoseSinkTestBase
     {
         protected Fixture Fixture { get; private set; }
-        protected ILogger Logger { get; private set; }
+        protected Logger Logger { get; private set; }
         protected IAmazonKinesisFirehose Client { get { return ClientMock.Object; } }
         protected Mock<IAmazonKinesisFirehose> ClientMock { get; private set; }
         protected EventHandler<LogSendErrorEventArgs> OnLogSendError { get; private set; }
@@ -40,17 +45,13 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisFirehoseS
         {
             ClientMock = new Mock<IAmazonKinesisFirehose>(MockBehavior.Loose);
             ClientMock.Setup(
-                x => x.PutRecordBatch(It.IsAny<PutRecordBatchRequest>())
+                    x => x.PutRecordBatchAsync(It.IsAny<PutRecordBatchRequest>(), It.IsAny<CancellationToken>())
                 )
-                .Callback((PutRecordBatchRequest request) =>
+                .Callback((PutRecordBatchRequest request, CancellationToken token) =>
                 {
                     request.Records.ForEach(r => r.Data.WriteTo(DataSent));
                 })
-                .Returns((PutRecordBatchRequest request) => new PutRecordBatchResponse
-                {
-                    FailedPutCount = 0,
-                    HttpStatusCode = HttpStatusCode.BadRequest
-                });
+                .Returns(Task.FromResult(new PutRecordBatchResponse() { FailedPutCount = 0 }));
         }
 
         protected void WhenLoggerCreated()
@@ -73,7 +74,6 @@ namespace Serilog.Sinks.Amazon.Kinesis.Tests.Integration.DurableKinesisFirehoseS
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
-            ((IDisposable)Logger)?.Dispose();
             Directory.Delete(LogPath, true);
             DataSent?.Dispose();
         }

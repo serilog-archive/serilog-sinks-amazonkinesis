@@ -14,11 +14,11 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Amazon.KinesisFirehose;
 using Amazon.KinesisFirehose.Model;
-using Primitives;
+using Serilog.Debugging;
 using Serilog.Sinks.Amazon.Kinesis.Common;
-using Serilog.Sinks.Amazon.Kinesis.Logging;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
 {
@@ -44,6 +44,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
 
         public void Dispose()
         {
+            _throttle.Flush();
+            _throttle.Stop();
             _throttle.Dispose();
         }
 
@@ -63,18 +65,18 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
                 Records = records
             };
 
-            Logger.TraceFormat("Writing {0} records to firehose", records.Count);
-            var response = _kinesisFirehoseClient.PutRecordBatch(request);
+            SelfLog.WriteLine("Writing {0} records to firehose", records.Count);
+            var putRecordBatchTask = _kinesisFirehoseClient.PutRecordBatchAsync(request);
 
-            successful = response.FailedPutCount == 0;
-            return response;
+            successful = putRecordBatchTask.GetAwaiter().GetResult().FailedPutCount == 0;
+            return putRecordBatchTask.Result;
         }
 
         protected override void HandleError(PutRecordBatchResponse response, int originalRecordCount)
         {
             foreach (var record in response.RequestResponses)
             {
-                Logger.TraceFormat("Firehose failed to index record in stream '{0}'. {1} {2} ", _streamName, record.ErrorCode, record.ErrorMessage);
+                SelfLog.WriteLine("Firehose failed to index record in stream '{0}'. {1} {2} ", _streamName, record.ErrorCode, record.ErrorMessage);
             }
             // fire event
             OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _streamName, response.FailedPutCount, originalRecordCount), null));

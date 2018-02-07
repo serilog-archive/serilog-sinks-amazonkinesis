@@ -17,10 +17,11 @@ using Amazon.Kinesis;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Sinks.Amazon.Kinesis;
+using Serilog.Formatting;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 using Serilog.Sinks.Amazon.Kinesis.Stream.Sinks;
 
-namespace Serilog
+namespace Serilog.Sinks.Amazon.Kinesis.Stream
 {
     /// <summary>
     /// Adds the WriteTo.AmazonKinesis() extension method to <see cref="LoggerConfiguration"/>.
@@ -80,6 +81,7 @@ namespace Serilog
             int? batchPostingLimit = null,
             TimeSpan? period = null,
             LogEventLevel? minimumLogEventLevel = null,
+            ITextFormatter customFormatter = null,
             EventHandler<LogSendErrorEventArgs> onLogSendError = null)
         {
             if (streamName == null) throw new ArgumentNullException("streamName");
@@ -91,7 +93,8 @@ namespace Serilog
                 Period = period ?? KinesisSinkOptionsBase.DefaultPeriod,
                 BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptionsBase.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
-                OnLogSendError = onLogSendError
+                OnLogSendError = onLogSendError,
+                CustomDurableFormatter = customFormatter
             };
 
             return AmazonKinesis(loggerConfiguration, options, kinesisClient);
