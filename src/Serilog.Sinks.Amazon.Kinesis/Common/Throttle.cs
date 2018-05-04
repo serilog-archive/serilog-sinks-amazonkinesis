@@ -48,7 +48,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Common
             if (Interlocked.CompareExchange(ref _throttling, THROTTLING_BUSY, THROTTLING_FREE) == THROTTLING_FREE)
             {
                 _running = true;
-                return _timer.Change(_throttlingTime, new TimeSpan(0, 0, 0, 0, Timeout.Infinite));
+                return _timer.Change(period: _throttlingTime, dueTime: new TimeSpan(0, 0, 0, 0, 0));
             }
             return false;
         }
