@@ -70,6 +70,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
         /// <param name="period"></param>
         /// <param name="minimumLogEventLevel"></param>
         /// <param name="onLogSendError"></param>
+        /// <param name="shared"></param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public static LoggerConfiguration AmazonKinesisFirehose(
@@ -82,7 +83,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
             TimeSpan? period = null,
             ITextFormatter customFormatter = null,
             LogEventLevel? minimumLogEventLevel = null,
-            EventHandler<LogSendErrorEventArgs> onLogSendError = null)
+            EventHandler<LogSendErrorEventArgs> onLogSendError = null,
+            bool shared = false)
         {
             if (kinesisFirehoseClient == null) throw new ArgumentNullException("kinesisFirehoseClient");
             if (streamName == null) throw new ArgumentNullException("streamName");
@@ -95,7 +97,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose
                 BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptionsBase.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
                 OnLogSendError = onLogSendError,
-                CustomDurableFormatter = customFormatter
+                CustomDurableFormatter = customFormatter,
+                Shared = shared
             };
 
             return AmazonKinesisFirehose(loggerConfiguration, options, kinesisFirehoseClient);

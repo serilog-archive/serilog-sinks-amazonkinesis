@@ -40,7 +40,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
                options.BufferBaseFilename + "-{Date}.json",
                state.DurableFormatter,
                options.BufferFileSizeLimitBytes,
-               null);
+               null,
+               shared: options.Shared);
 
             _shipper = new HttpLogShipper(state);
 

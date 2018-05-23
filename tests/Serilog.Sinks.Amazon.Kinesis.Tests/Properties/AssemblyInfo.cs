@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2, " +
                               "PublicKey=" +
                               "0024000004800000940000000602000000240000525341310004000001000100"+
