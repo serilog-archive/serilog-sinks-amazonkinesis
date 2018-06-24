@@ -16,7 +16,7 @@ Point the logger to Kinesis:
 const string streamName = "firehose";
 const int shardCount = 2;
 
-SelfLog.Out = Console.Out;
+SelfLog.Enable(Console.Error);
 
 var client = AWSClientFactory.CreateAmazonKinesisClient();
             
