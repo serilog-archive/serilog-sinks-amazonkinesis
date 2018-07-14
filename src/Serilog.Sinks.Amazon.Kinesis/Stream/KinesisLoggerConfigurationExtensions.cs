@@ -70,6 +70,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
         /// <param name="period"></param>
         /// <param name="minimumLogEventLevel"></param>
         /// <param name="onLogSendError"></param>
+        /// <param name="shared"></param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public static LoggerConfiguration AmazonKinesis(
@@ -82,7 +83,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
             TimeSpan? period = null,
             LogEventLevel? minimumLogEventLevel = null,
             ITextFormatter customFormatter = null,
-            EventHandler<LogSendErrorEventArgs> onLogSendError = null)
+            EventHandler<LogSendErrorEventArgs> onLogSendError = null,
+            bool shared = false)
         {
             if (streamName == null) throw new ArgumentNullException("streamName");
 
@@ -94,7 +96,8 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream
                 BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptionsBase.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
                 OnLogSendError = onLogSendError,
-                CustomDurableFormatter = customFormatter
+                CustomDurableFormatter = customFormatter,
+                Shared = shared
             };
 
             return AmazonKinesis(loggerConfiguration, options, kinesisClient);

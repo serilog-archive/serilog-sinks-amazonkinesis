@@ -74,5 +74,10 @@ namespace Serilog.Sinks.Amazon.Kinesis.Common
         /// An eventhandler which will be invoked whenever there is an error in log sending.
         /// </summary>
         public EventHandler<LogSendErrorEventArgs> OnLogSendError { get; set; }
+
+        /// <summary>
+        /// Allow the log files to be shared by multiple processes. The default is false.
+        /// </summary>
+        public bool Shared { get; set; }
     }
 }
