@@ -9,6 +9,7 @@
     <projectUrl>http://serilog.net</projectUrl>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
     <iconUrl>http://serilog.net/images/serilog-sink-nuget.png</iconUrl>
+    <repository type="git" url="https://github.com/serilog/serilog-sinks-amazonkinesis" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>serilog logging aws amazon kinesis structured logging</tags>
     <dependencies>
