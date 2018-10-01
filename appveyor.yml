@@ -14,7 +14,7 @@ artifacts:
 - path: Serilog.*.nupkg
 only_commits:
   files:
-    - serilog.sinks.amazonkinesis.sln
+    - serilog-sinks-amazonkinesis.sln
     - src/
     - Build.ps1
     - assets/
