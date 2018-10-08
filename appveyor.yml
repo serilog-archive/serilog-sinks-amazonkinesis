@@ -18,6 +18,7 @@ only_commits:
     - src/
     - Build.ps1
     - assets/
+    - tests/Serilog.Sinks.Amazon.Kinesis.Tests/
 deploy:
 - provider: NuGet
   api_key:
