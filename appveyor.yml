@@ -12,6 +12,13 @@ build_script:
 
 artifacts:
 - path: Serilog.*.nupkg
+only_commits:
+  files:
+    - serilog-sinks-amazonkinesis.sln
+    - src/
+    - Build.ps1
+    - assets/
+    - tests/Serilog.Sinks.Amazon.Kinesis.Tests/
 deploy:
 - provider: NuGet
   api_key:
