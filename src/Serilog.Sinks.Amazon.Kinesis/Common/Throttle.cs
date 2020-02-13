@@ -34,6 +34,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Common
                 if (_running)
                 {
                     _callback();
+                    _throttling = THROTTLING_FREE;
                 }
             }
         }
