@@ -23,7 +23,7 @@ namespace AmazonKinesisSample
 
         public static void Main()
         {
-            SelfLog.Out = Console.Out;
+            SelfLog.Enable(Console.Out);
 
             var client = new AmazonKinesisClient();
 
@@ -42,7 +42,6 @@ namespace AmazonKinesisSample
                 loggerConfig.WriteTo.AmazonKinesis(
                     kinesisClient: client,
                     streamName: streamName,
-                    shardCount: shardCount,
                     period: TimeSpan.FromSeconds(2),
                     bufferBaseFilename: "./logs/kinesis-buffer",
                     onLogSendError: OnLogSendError

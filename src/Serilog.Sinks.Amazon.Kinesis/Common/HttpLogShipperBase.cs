@@ -2,68 +2,51 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using Serilog.Sinks.Amazon.Kinesis.Logging;
+using Serilog.Debugging;
 
-namespace Serilog.Sinks.Amazon.Kinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Common
 {
-    internal abstract class HttpLogShipperBase<TRecord, TResponse> : IDisposable
+    abstract class HttpLogShipperBase<TRecord, TResponse>
     {
-        const long ERROR_SHARING_VIOLATION = 0x20;
-        const long ERROR_LOCK_VIOLATION = 0x21;
-
-        ILog _logger;
-        protected ILog Logger => _logger ?? (_logger = LogProvider.GetLogger(GetType()));
+        private readonly ILogReaderFactory _logReaderFactory;
+        private readonly IPersistedBookmarkFactory _persistedBookmarkFactory;
+        private readonly ILogShipperFileManager _fileManager;
 
         protected readonly int _batchPostingLimit;
         protected readonly string _bookmarkFilename;
         protected readonly string _candidateSearchPath;
         protected readonly string _logFolder;
-        readonly TimeSpan _period;
-        protected readonly object _stateLock = new object();
         protected readonly string _streamName;
-        readonly Timer _timer;
 
-        protected volatile bool _unloading;
-
-        protected HttpLogShipperBase(KinesisSinkStateBase state)
+        protected HttpLogShipperBase(
+            ILogShipperOptions options,
+            ILogReaderFactory logReaderFactory,
+            IPersistedBookmarkFactory persistedBookmarkFactory,
+            ILogShipperFileManager fileManager
+            )
         {
-            _period = state.SinkOptions.Period;
-            _timer = new Timer(s => OnTick());
-            _batchPostingLimit = state.SinkOptions.BatchPostingLimit;
-            _streamName = state.SinkOptions.StreamName;
-            _bookmarkFilename = Path.GetFullPath(state.SinkOptions.BufferBaseFilename + ".bookmark");
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (logReaderFactory == null) throw new ArgumentNullException(nameof(logReaderFactory));
+            if (persistedBookmarkFactory == null) throw new ArgumentNullException(nameof(persistedBookmarkFactory));
+            if (fileManager == null) throw new ArgumentNullException(nameof(fileManager));
+
+            _logReaderFactory = logReaderFactory;
+            _persistedBookmarkFactory = persistedBookmarkFactory;
+            _fileManager = fileManager;
+
+            _batchPostingLimit = options.BatchPostingLimit;
+            _streamName = options.StreamName;
+            _bookmarkFilename = Path.GetFullPath(options.BufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
-            _candidateSearchPath = Path.GetFileName(state.SinkOptions.BufferBaseFilename) + "*.json";
+            _candidateSearchPath = Path.GetFileName(options.BufferBaseFilename) + "*.json";
 
-            Logger.InfoFormat("Candidate search path is {0}", _candidateSearchPath);
-            Logger.InfoFormat("Log folder is {0}", _logFolder);
-
-            AppDomain.CurrentDomain.DomainUnload += OnAppDomainUnloading;
-            AppDomain.CurrentDomain.ProcessExit += OnAppDomainUnloading;
-
-            SetTimer();
         }
 
-        /// <summary>
-        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        /// <filterpriority>2</filterpriority>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
 
-        protected abstract TRecord PrepareRecord(byte[] bytes);
+        protected abstract TRecord PrepareRecord(MemoryStream stream);
         protected abstract TResponse SendRecords(List<TRecord> records, out bool successful);
         protected abstract void HandleError(TResponse response, int originalRecordCount);
         public event EventHandler<LogSendErrorEventArgs> LogSendError;
-
-        void OnAppDomainUnloading(object sender, EventArgs e)
-        {
-            CloseAndFlush();
-        }
 
         protected void OnLogSendError(LogSendErrorEventArgs e)
         {
@@ -74,301 +57,227 @@ namespace Serilog.Sinks.Amazon.Kinesis
             }
         }
 
-        void CloseAndFlush()
-        {
-            lock (_stateLock)
-            {
-                if (_unloading)
-                    return;
-
-                _unloading = true;
-            }
-
-            AppDomain.CurrentDomain.DomainUnload -= OnAppDomainUnloading;
-            AppDomain.CurrentDomain.ProcessExit -= OnAppDomainUnloading;
-
-            var wh = new ManualResetEvent(false);
-            if (_timer.Dispose(wh))
-                wh.WaitOne();
-
-            OnTick();
-        }
-
-        /// <summary>
-        ///     Free resources held by the sink.
-        /// </summary>
-        /// <param name="disposing">
-        ///     If true, called because the object is being disposed; if false,
-        ///     the object is being disposed from the finalizer.
-        /// </param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposing) return;
-            CloseAndFlush();
-        }
-
-        protected void SetTimer()
-        {
-            // Note, called under _stateLock
-
-#if NET40
-           _timer.Change(_period, TimeSpan.FromDays(30));
-#else
-            _timer.Change(_period, Timeout.InfiniteTimeSpan);
-#endif
-        }
-
-        void OnTick()
+        private IPersistedBookmark TryCreateBookmark()
         {
             try
             {
-                int count;
+                return _persistedBookmarkFactory.Create(_bookmarkFilename);
+            }
+            catch (IOException ex)
+            {
+                SelfLog.WriteLine("Bookmark cannot be opened.", ex);
+                return null;
+            }
+        }
 
+        protected void ShipLogs()
+        {
+            try
+            {
+                // Locking the bookmark ensures that though there may be multiple instances of this
+                // class running, only one will ship logs at a time.
+
+                using (var bookmark = TryCreateBookmark())
+                {
+                    if (bookmark == null)
+                        return;
+
+                    ShipLogs(bookmark);
+                }
+            }
+            catch (IOException ex)
+            {
+                SelfLog.WriteLine("Error shipping logs", ex);
+            }
+            catch (Exception ex)
+            {
+                SelfLog.WriteLine("Error shipping logs", ex);
+                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream", _streamName), ex));
+            }
+        }
+
+        private void ShipLogs(IPersistedBookmark bookmark)
+        {
+            do
+            {
+                string currentFilePath = bookmark.FileName;
+
+                SelfLog.WriteLine("Bookmark is currently at offset {0} in '{1}'", bookmark.Position, currentFilePath);
+
+                var fileSet = GetFileSet();
+
+                if (currentFilePath == null)
+                {
+                    currentFilePath = fileSet.FirstOrDefault();
+                    SelfLog.WriteLine("New log file is {0}", currentFilePath);
+                    bookmark.UpdateFileNameAndPosition(currentFilePath, 0L);
+                }
+                else if (fileSet.All(f => CompareFileNames(f, currentFilePath) != 0))
+                {
+                    currentFilePath = fileSet.FirstOrDefault(f => CompareFileNames(f, currentFilePath) >= 0);
+                    SelfLog.WriteLine("New log file is {0}", currentFilePath);
+                    bookmark.UpdateFileNameAndPosition(currentFilePath, 0L);
+                }
+
+                // delete all previous files - we will not read them anyway
+                if (currentFilePath == null)
+                {
+                    foreach (var fileToDelete in fileSet)
+                    {
+                        TryDeleteFile(fileToDelete);
+                    }
+                }
+                else
+                {
+                    foreach (var fileToDelete in fileSet.TakeWhile(f => CompareFileNames(f, currentFilePath) < 0))
+                    {
+                        TryDeleteFile(fileToDelete);
+                    }
+                }
+
+                if (currentFilePath == null)
+                {
+                    SelfLog.WriteLine("No log file is found. Nothing to do.");
+                    break;
+                }
+
+                // now we are interested in current file and all after it.
+                fileSet =
+                    fileSet.SkipWhile(f => CompareFileNames(f, currentFilePath) < 0)
+                        .ToArray();
+
+                var initialPosition = bookmark.Position;
+                List<TRecord> records;
                 do
                 {
-                    count = 0;
-
-                    // Locking the bookmark ensures that though there may be multiple instances of this
-                    // class running, only one will ship logs at a time.
-
-                    using (var bookmark = File.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                    var batch = ReadRecordBatch(currentFilePath, bookmark.Position, _batchPostingLimit);
+                    records = batch.Item2;
+                    if (records.Count > 0)
                     {
-                        long nextLineBeginsAtOffset;
-                        string currentFilePath;
+                        bool successful;
+                        var response = SendRecords(records, out successful);
 
-                        TryReadBookmark(bookmark, out nextLineBeginsAtOffset, out currentFilePath);
-                        Logger.TraceFormat("Bookmark is currently at offset {0} in '{1}'", nextLineBeginsAtOffset, currentFilePath);
-
-                        var fileSet = GetFileSet();
-
-                        if (currentFilePath == null || !File.Exists(currentFilePath))
+                        if (!successful)
                         {
-                            nextLineBeginsAtOffset = 0;
-                            currentFilePath = fileSet.FirstOrDefault();
-                            Logger.InfoFormat("Current log file is {0}", currentFilePath);
-
-                            if (currentFilePath == null) continue;
+                            SelfLog.WriteLine("SendRecords failed for {0} records.", records.Count);
+                            HandleError(response, records.Count);
+                            return;
                         }
+                    }
 
-                        var records = new List<TRecord>();
-                        long startingOffset;
-                        using (var current = File.Open(currentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    var newPosition = batch.Item1;
+                    if (initialPosition < newPosition)
+                    {
+                        SelfLog.WriteLine("Advancing bookmark from {0} to {1} on {2}", initialPosition, newPosition, currentFilePath);
+                        bookmark.UpdatePosition(newPosition);
+                    }
+                    else if (initialPosition > newPosition)
+                    {
+                        newPosition = 0;
+                        SelfLog.WriteLine("File {2} has been truncated or re-created, bookmark reset from {0} to {1}", initialPosition, newPosition, currentFilePath);
+                        bookmark.UpdatePosition(newPosition);
+                    }
+
+                } while (records.Count >= _batchPostingLimit);
+
+                if (initialPosition == bookmark.Position)
+                {
+                    SelfLog.WriteLine("Found no records to process");
+
+                    // Only advance the bookmark if there is next file in the queue 
+                    // and no other process has the current file locked, and its length is as we found it.
+
+                    if (fileSet.Length > 1)
+                    {
+                        SelfLog.WriteLine("BufferedFilesCount: {0}; checking if can advance to the next file", fileSet.Length);
+                        var weAreAtEndOfTheFileAndItIsNotLockedByAnotherThread = WeAreAtEndOfTheFileAndItIsNotLockedByAnotherThread(currentFilePath, bookmark.Position);
+                        if (weAreAtEndOfTheFileAndItIsNotLockedByAnotherThread)
                         {
-                            startingOffset = current.Position = nextLineBeginsAtOffset;
-
-                            string nextLine;
-                            while (count < _batchPostingLimit && TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
-                            {
-                                ++count;
-                                var bytes = Encoding.UTF8.GetBytes(nextLine);
-                                var record = PrepareRecord(bytes);
-                                records.Add(record);
-                            }
-                        }
-
-                        if (count > 0)
-                        {
-                            bool successful;
-                            var response = SendRecords(records, out successful);
-
-                            if (!successful)
-                            {
-                                HandleError(response, records.Count);
-                            }
-                            else
-                            {
-                                // Advance the bookmark only if we successfully wrote
-                                Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", startingOffset, nextLineBeginsAtOffset);
-                                WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFilePath);
-                            }
+                            SelfLog.WriteLine("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
+                            bookmark.UpdateFileNameAndPosition(fileSet[1], 0);
                         }
                         else
                         {
-                            Logger.TraceFormat("Found no records to process");
-
-                            // Only advance the bookmark if no other process has the
-                            // current file locked, and its length is as we found it.
-
-                            var bufferedFilesCount = fileSet.Length;
-                            var isProcessingFirstFile = fileSet.First().Equals(currentFilePath, StringComparison.InvariantCultureIgnoreCase);
-
-                            if (bufferedFilesCount == 2 && isProcessingFirstFile)
-                            {
-                              Logger.TraceFormat("BufferedFilesCount: {0}; AreProcessingFirstFile: true", bufferedFilesCount);
-                              var weAreAtEndOfTheFileAndItIsNotLockedByAnotherThread = WeAreAtEndOfTheFileAndItIsNotLockedByAnotherThread(currentFilePath, nextLineBeginsAtOffset);
-                              if (weAreAtEndOfTheFileAndItIsNotLockedByAnotherThread)
-                              {
-                                Logger.TraceFormat("Advancing bookmark from '{0}' to '{1}'", currentFilePath, fileSet[1]);
-                                WriteBookmark(bookmark, 0, fileSet[1]);                                
-                              }
-                            }
-
-                            if (bufferedFilesCount > 2)
-                            {
-                                // Once there's a third file waiting to ship, we do our
-                                // best to move on, though a lock on the current file
-                                // will delay this.
-                                Logger.InfoFormat("Deleting '{0}'", fileSet[0]);
-
-                                File.Delete(fileSet[0]);
-                            }
+                            break;
                         }
                     }
-                } while (count == _batchPostingLimit);
-            }
-            catch (IOException ex)
-            {
-                long win32ErrorCode = GetWin32ErrorCode(ex);
-
-                if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
-                {
-                    Logger.TraceException("Swallowed I/O exception", ex);
+                    else
+                    {
+                        SelfLog.WriteLine("This is a single log file, and we are in the end of it. Nothing to do.");
+                        break;
+                    }
                 }
-                else
-                {
-                    Logger.ErrorException("Unexpected I/O exception", ex);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Exception while emitting periodic batch", ex);
-                OnLogSendError(new LogSendErrorEventArgs(string.Format("Error in shipping logs to '{0}' stream)", _streamName), ex));
-            }
-            finally
-            {
-                lock (_stateLock)
-                {
-                    if (!_unloading)
-                        SetTimer();
-                }
-            }
+            } while (true);
         }
 
-        private long GetWin32ErrorCode(IOException ex)
+        private Tuple<long, List<TRecord>> ReadRecordBatch(string currentFilePath, long position, int maxRecords)
         {
-#if NET40
-            long win32ErrorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & 0xFFFF;
-#else
-            long win32ErrorCode = ex.HResult & 0xFFFF;
-#endif
-            return win32ErrorCode;
+            var records = new List<TRecord>(maxRecords);
+            long positionSent;
+            using (var reader = _logReaderFactory.Create(currentFilePath, position))
+            {
+                do
+                {
+                    var stream = reader.ReadLine();
+                    if (stream.Length == 0)
+                    {
+                        break;
+                    }
+                    records.Add(PrepareRecord(stream));
+                } while (records.Count < maxRecords);
+
+                positionSent = reader.Position;
+            }
+
+            return Tuple.Create(positionSent, records);
         }
 
-        protected bool WeAreAtEndOfTheFileAndItIsNotLockedByAnotherThread(string file, long nextLineBeginsAtOffset)
+        private bool TryDeleteFile(string fileToDelete)
         {
             try
             {
-                using (var fileStream = File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
-                {
-                    return fileStream.Length <= nextLineBeginsAtOffset;
-                }
-            }
-            catch (IOException ex)
-            {
-                long win32ErrorCode = GetWin32ErrorCode(ex);
-
-                if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
-                {
-                    Logger.TraceException("Swallowed I/O exception while testing locked status of {0}", ex, file);
-                }
-                else
-                {
-                    Logger.ErrorException("Unexpected I/O exception while testing locked status of {0}", ex, file);
-                }
+                _fileManager.LockAndDeleteFile(fileToDelete);
+                SelfLog.WriteLine("Log file deleted: {0}", fileToDelete);
+                return true;
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Unexpected exception while testing locked status of {0}", ex, file);
+                SelfLog.WriteLine("Exception deleting file: {0}", ex, fileToDelete);
+                return false;
+            }
+        }
+
+        private bool WeAreAtEndOfTheFileAndItIsNotLockedByAnotherThread(string file, long nextLineBeginsAtOffset)
+        {
+            try
+            {
+                return _fileManager.GetFileLengthExclusiveAccess(file) <= nextLineBeginsAtOffset;
+            }
+            catch (IOException ex)
+            {
+                SelfLog.WriteLine("Swallowed I/O exception while testing locked status of {0}", ex, file);
+            }
+            catch (Exception ex)
+            {
+                SelfLog.WriteLine("Unexpected exception while testing locked status of {0}", ex, file);
             }
 
             return false;
         }
 
-        private static readonly Encoding _bookmarkEncoding = new UTF8Encoding(false, false);
-
-        protected static void WriteBookmark(FileStream bookmark, long nextLineBeginsAtOffset, string currentFile)
+        private string[] GetFileSet()
         {
-            bookmark.SetLength(0);
-            var content = string.Format("{0}:::{1}", nextLineBeginsAtOffset, currentFile);
-            var byteContent = _bookmarkEncoding.GetBytes(content);
-            bookmark.Write(byteContent, 0, byteContent.Length);
-            bookmark.Flush();
-        }
-
-        // It would be ideal to chomp whitespace here, but not required.
-        protected static bool TryReadLine(System.IO.Stream current, ref long nextStart, out string nextLine)
-        {
-            var includesBom = nextStart == 0;
-
-            if (current.Length <= nextStart)
-            {
-                nextLine = null;
-                return false;
-            }
-
-            current.Position = nextStart;
-
-#if NET40
-    // Important not to dispose this StreamReader as the stream must remain open.
-            var reader = new StreamReader(current, Encoding.UTF8, false, 128);
-            nextLine = reader.ReadLine();
-#else
-            using (var reader = new StreamReader(current, Encoding.UTF8, false, 128, true))
-            {
-                nextLine = reader.ReadLine();
-            }
-#endif
-
-            if (nextLine == null)
-                return false;
-
-            nextStart += Encoding.UTF8.GetByteCount(nextLine) + Encoding.UTF8.GetByteCount(Environment.NewLine);
-            if (includesBom)
-                nextStart += 3;
-
-            return true;
-        }
-
-        protected static void TryReadBookmark(System.IO.Stream bookmark, out long nextLineBeginsAtOffset, out string currentFile)
-        {
-            nextLineBeginsAtOffset = 0;
-            currentFile = null;
-
-            if (bookmark.Length != 0)
-            {
-                bookmark.Position = 0;
-                string current;
-#if NET40
-    // Important not to dispose this StreamReader as the stream must remain open.
-                var reader = new StreamReader(bookmark, _bookmarkEncoding, false, 128);
-                current = reader.ReadLine();
-#else
-                using (var reader = new StreamReader(bookmark, _bookmarkEncoding, false, 128, true))
-                {
-                    current = reader.ReadLine();
-                }
-#endif
-
-                if (current != null)
-                {
-                    var parts = current.Split(new[] {":::"}, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length == 2)
-                    {
-                        nextLineBeginsAtOffset = long.Parse(parts[0]);
-                        currentFile = parts[1];
-                    }
-                }
-            }
-        }
-
-        protected string[] GetFileSet()
-        {
-            var fileSet = Directory.GetFiles(_logFolder, _candidateSearchPath)
-                .OrderBy(n => n)
+            var fileSet = _fileManager.GetFiles(_logFolder, _candidateSearchPath)
+                .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            var fileSetDesc = string.Join(";", fileSet);
-            Logger.TraceFormat("FileSet contains: {0}", fileSetDesc);
+
+            SelfLog.WriteLine("FileSet contains: {0}", string.Join(";", fileSet));
             return fileSet;
+        }
+
+        private static int CompareFileNames(string fileName1, string fileName2)
+        {
+            return string.Compare(fileName1, fileName2, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

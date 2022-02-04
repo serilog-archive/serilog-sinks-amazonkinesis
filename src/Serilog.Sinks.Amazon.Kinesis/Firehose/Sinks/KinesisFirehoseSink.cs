@@ -15,6 +15,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Amazon.KinesisFirehose;
 using Amazon.KinesisFirehose.Model;
 using Serilog.Events;
@@ -44,26 +45,10 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
         }
 
         /// <summary>
-        /// Free resources held by the sink.
-        /// </summary>
-        /// <param name="disposing">If true, called because the object is being disposed; if false,
-        /// the object is being disposed from the finalizer.</param>
-        protected override void Dispose(bool disposing)
-        {
-            // First flush the buffer
-            base.Dispose(disposing);
-
-            if (disposing)
-            {
-                _state.KinesisFirehoseClient.Dispose();
-            }
-        }
-
-        /// <summary>
         /// Emit a batch of log events, running to completion asynchronously.
         /// </summary>
         /// <param name="events">The events to be logged to Kinesis Firehose</param>
-        protected override void EmitBatch(IEnumerable<LogEvent> events)
+        protected override Task EmitBatchAsync(IEnumerable<LogEvent> events)
         {
             var request = new PutRecordBatchRequest
             {
@@ -85,7 +70,7 @@ namespace Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks
                 request.Records.Add(entry);
             }
 
-            _state.KinesisFirehoseClient.PutRecordBatch(request);
+            return _state.KinesisFirehoseClient.PutRecordBatchAsync(request);
         }
 
 

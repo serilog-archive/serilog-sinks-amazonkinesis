@@ -15,27 +15,47 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
-using Serilog.Sinks.Amazon.Kinesis.Logging;
+using Serilog.Debugging;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 
 namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
 {
-    internal class HttpLogShipper : HttpLogShipperBase<PutRecordsRequestEntry, PutRecordsResponse>
+    sealed class HttpLogShipper : HttpLogShipperBase<PutRecordsRequestEntry, PutRecordsResponse>, IDisposable
     {
         readonly IAmazonKinesis _kinesisClient;
+        readonly Throttle _throttle;
 
-        public HttpLogShipper(KinesisSinkState state) : base(state)
+        public HttpLogShipper(KinesisSinkState state) : base(state.Options,
+            new LogReaderFactory(),
+            new PersistedBookmarkFactory(),
+            new LogShipperFileManager()
+            )
         {
+            _throttle = new Throttle(ShipLogs, state.Options.Period);
             _kinesisClient = state.KinesisClient;
         }
 
-        protected override PutRecordsRequestEntry PrepareRecord(byte[] bytes)
+        public void Emit()
+        {
+            _throttle.ThrottleAction();
+        }
+
+        public void Dispose()
+        {
+            _throttle.Flush();
+            _throttle.Stop();
+            _throttle.Dispose();
+        }
+
+        protected override PutRecordsRequestEntry PrepareRecord(MemoryStream stream)
         {
             return new PutRecordsRequestEntry
             {
                 PartitionKey = Guid.NewGuid().ToString(),
-                Data = new MemoryStream(bytes)
+                Data = stream
             };
         }
 
@@ -47,18 +67,18 @@ namespace Serilog.Sinks.Amazon.Kinesis.Stream.Sinks
                 Records = records
             };
 
-            Logger.TraceFormat("Writing {0} records to kinesis", records.Count);
-            var response = _kinesisClient.PutRecords(request);
+            SelfLog.WriteLine("Writing {0} records to kinesis", records.Count);
+            var putRecordBatchTask = _kinesisClient.PutRecordsAsync(request);
 
-            successful = response.FailedRecordCount == 0;
-            return response;
+            successful = putRecordBatchTask.GetAwaiter().GetResult().FailedRecordCount == 0;
+            return putRecordBatchTask.Result;
         }
 
         protected override void HandleError(PutRecordsResponse response, int originalRecordCount)
         {
             foreach (var record in response.Records)
             {
-                Logger.TraceFormat("Kinesis failed to index record in stream '{0}'. {1} {2} ", _streamName, record.ErrorCode, record.ErrorMessage);
+                SelfLog.WriteLine("Kinesis failed to index record in stream '{0}'. {1} {2} ", _streamName, record.ErrorCode, record.ErrorMessage);
             }
             // fire event
             OnLogSendError(new LogSendErrorEventArgs(string.Format("Error writing records to {0} ({1} of {2} records failed)", _streamName, response.FailedRecordCount, originalRecordCount), null));

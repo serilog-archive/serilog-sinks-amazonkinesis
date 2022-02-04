@@ -12,18 +12,21 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>serilog logging aws amazon kinesis structured logging</tags>
     <dependencies>
-        <dependency id="AWSSDK.Core" version="3.1.4.3" />
-        <dependency id="AWSSDK.Kinesis" version="3.1.2.2" />
-        <dependency id="AWSSDK.KinesisFirehose" version="3.1.0.2" />
-        <dependency id="Serilog" version="1.5.14" />
+      <dependency id="AWSSDK.Core" version="3.3.21.12" />
+      <dependency id="AWSSDK.Kinesis" version="3.3.5.0" />
+      <dependency id="AWSSDK.KinesisFirehose" version="3.3.3.0" />
+      <dependency id="Serilog" version="2.0.0" />
+      <dependency id="Serilog.Sinks.File" version="2.2.0" />
+      <dependency id="Serilog.Sinks.PeriodicBatching" version="2.1.0" />
+      <dependency id="Serilog.Sinks.RollingFile" version="2.2.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net45" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin40\Release\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin40\Release\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net40" />
-    <file src="Serilog.Sinks.Amazon.Kinesis\bin40\Release\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net40" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\net45\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\net45" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\net45\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\net45" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\net45\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\net45" />
+	<file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\netstandard2.0\Serilog.Sinks.Amazon.Kinesis.dll" target="lib\netstandard2.0" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\netstandard2.0\Serilog.Sinks.Amazon.Kinesis.pdb" target="lib\netstandard2.0" />
+    <file src="Serilog.Sinks.Amazon.Kinesis\bin\Release\netstandard2.0\Serilog.Sinks.Amazon.Kinesis.xml" target="lib\netstandard2.0" />
   </files>
 </package>

@@ -17,10 +17,11 @@ using Amazon.KinesisFirehose;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Sinks.Amazon.Kinesis;
+using Serilog.Formatting;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 using Serilog.Sinks.Amazon.Kinesis.Firehose.Sinks;
 
-namespace Serilog
+namespace Serilog.Sinks.Amazon.Kinesis.Firehose
 {
     /// <summary>
     /// Adds the WriteTo.AmazonKinesisFirehose() extension method to <see cref="LoggerConfiguration"/>.
@@ -69,6 +70,7 @@ namespace Serilog
         /// <param name="period"></param>
         /// <param name="minimumLogEventLevel"></param>
         /// <param name="onLogSendError"></param>
+        /// <param name="shared"></param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public static LoggerConfiguration AmazonKinesisFirehose(
@@ -79,8 +81,10 @@ namespace Serilog
             int? bufferFileSizeLimitBytes = null,
             int? batchPostingLimit = null,
             TimeSpan? period = null,
+            ITextFormatter customFormatter = null,
             LogEventLevel? minimumLogEventLevel = null,
-            EventHandler<LogSendErrorEventArgs> onLogSendError = null)
+            EventHandler<LogSendErrorEventArgs> onLogSendError = null,
+            bool shared = false)
         {
             if (kinesisFirehoseClient == null) throw new ArgumentNullException("kinesisFirehoseClient");
             if (streamName == null) throw new ArgumentNullException("streamName");
@@ -88,11 +92,13 @@ namespace Serilog
             var options = new KinesisFirehoseSinkOptions(streamName)
             {
                 BufferFileSizeLimitBytes = bufferFileSizeLimitBytes,
-                BufferBaseFilename = bufferBaseFilename,
-                Period = period ?? KinesisFirehoseSinkOptions.DefaultPeriod,
-                BatchPostingLimit = batchPostingLimit ?? KinesisFirehoseSinkOptions.DefaultBatchPostingLimit,
+                BufferBaseFilename = bufferBaseFilename == null ? null : bufferBaseFilename + ".firehose",
+                Period = period ?? KinesisSinkOptionsBase.DefaultPeriod,
+                BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptionsBase.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
-                OnLogSendError = onLogSendError
+                OnLogSendError = onLogSendError,
+                CustomDurableFormatter = customFormatter,
+                Shared = shared
             };
 
             return AmazonKinesisFirehose(loggerConfiguration, options, kinesisFirehoseClient);

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Serilog.Sinks.Amazon.Kinesis
+namespace Serilog.Sinks.Amazon.Kinesis.Common
 {
     /// <summary>
     /// Args for event raised when log sending errors.

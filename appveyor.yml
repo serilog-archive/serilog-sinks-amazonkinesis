@@ -1,0 +1,20 @@
+version: '{build}'
+image: Visual Studio 2017
+environment:
+  VisualStudioVersion: 15.0
+build_script:
+- ps: >-
+    $version = "2.2"
+
+    $env:VisualStudioVersion = 15.0
+    
+    ./Build.ps1 -majorMinor "$version" -patch "$env:APPVEYOR_BUILD_VERSION" -customLogger "C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+
+artifacts:
+- path: Serilog.*.nupkg
+deploy:
+- provider: NuGet
+  api_key:
+    secure: bd9z4P73oltOXudAjPehwp9iDKsPtC+HbgshOrSgoyQKr5xVK+bxJQngrDJkHdY8
+  on:
+    branch: master    

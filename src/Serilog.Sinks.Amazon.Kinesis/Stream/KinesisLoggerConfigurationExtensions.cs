@@ -17,11 +17,11 @@ using Amazon.Kinesis;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Sinks.Amazon.Kinesis;
-using Serilog.Sinks.Amazon.Kinesis.Stream;
+using Serilog.Formatting;
+using Serilog.Sinks.Amazon.Kinesis.Common;
 using Serilog.Sinks.Amazon.Kinesis.Stream.Sinks;
 
-namespace Serilog
+namespace Serilog.Sinks.Amazon.Kinesis.Stream
 {
     /// <summary>
     /// Adds the WriteTo.AmazonKinesis() extension method to <see cref="LoggerConfiguration"/>.
@@ -64,37 +64,40 @@ namespace Serilog
         /// <param name="loggerConfiguration">The logger configuration.</param>
         /// <param name="kinesisClient"></param>
         /// <param name="streamName"></param>
-        /// <param name="shardCount"></param>
         /// <param name="bufferBaseFilename"></param>
         /// <param name="bufferFileSizeLimitBytes"></param>
         /// <param name="batchPostingLimit"></param>
         /// <param name="period"></param>
         /// <param name="minimumLogEventLevel"></param>
         /// <param name="onLogSendError"></param>
+        /// <param name="shared"></param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public static LoggerConfiguration AmazonKinesis(
             this LoggerSinkConfiguration loggerConfiguration,
             IAmazonKinesis kinesisClient,
             string streamName,
-            int? shardCount = null,
             string bufferBaseFilename = null,
             int? bufferFileSizeLimitBytes = null,
             int? batchPostingLimit = null,
             TimeSpan? period = null,
             LogEventLevel? minimumLogEventLevel = null,
-            EventHandler<LogSendErrorEventArgs> onLogSendError = null)
+            ITextFormatter customFormatter = null,
+            EventHandler<LogSendErrorEventArgs> onLogSendError = null,
+            bool shared = false)
         {
             if (streamName == null) throw new ArgumentNullException("streamName");
 
-            var options = new KinesisStreamSinkOptions(streamName: streamName, shardCount: shardCount)
+            var options = new KinesisStreamSinkOptions(streamName: streamName)
             {
                 BufferFileSizeLimitBytes = bufferFileSizeLimitBytes,
-                BufferBaseFilename = bufferBaseFilename,
-                Period = period ?? KinesisStreamSinkOptions.DefaultPeriod,
-                BatchPostingLimit = batchPostingLimit ?? KinesisStreamSinkOptions.DefaultBatchPostingLimit,
+                BufferBaseFilename = bufferBaseFilename == null ? null : bufferBaseFilename + ".stream",
+                Period = period ?? KinesisSinkOptionsBase.DefaultPeriod,
+                BatchPostingLimit = batchPostingLimit ?? KinesisSinkOptionsBase.DefaultBatchPostingLimit,
                 MinimumLogEventLevel = minimumLogEventLevel ?? LevelAlias.Minimum,
-                OnLogSendError = onLogSendError
+                OnLogSendError = onLogSendError,
+                CustomDurableFormatter = customFormatter,
+                Shared = shared
             };
 
             return AmazonKinesis(loggerConfiguration, options, kinesisClient);
